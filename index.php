@@ -49,31 +49,14 @@ $tableNumber = $_SESSION['table_number'] ?? '';
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="site-header">
+    <header class="site-header fade-in">
         <div class="site-brand">
             <div>
                 <h1>Cozy Corner Café</h1>
                 <p>Fast, friendly, and fresh café ordering for every table.</p>
             </div>
-            <div class="site-actions">
-                <a class="header-link" href="<?php echo esc($adminLink); ?>"><?php echo esc($adminLabel); ?></a>
-                <?php if (!empty($_SESSION['admin_user'])): ?>
-                    <a class="header-link" href="add_item.php">Add Item</a>
-                <?php endif; ?>
-            </div>
         </div>
 
-        <div class="hero">
-            <div class="hero-copy">
-                <h2>Choose your perfect plate and order from your table.</h2>
-                <p>Browse breakfast, lunch, dinner, and drinks. Save your table, build a fast order, and checkout with a single click.</p>
-            </div>
-            <div class="hero-overview">
-                <span>20 Premium tables</span>
-                <span>Session cart + table memory</span>
-                <span>Admin dashboard with live order updates</span>
-            </div>
-        </div>
     </header>
 
     <main class="page-shell">
@@ -93,21 +76,6 @@ $tableNumber = $_SESSION['table_number'] ?? '';
             </div>
         </div>
 
-        <form method="post" style="margin: 0 auto 24px; max-width: 560px; display: grid; gap: 12px;">
-            <label style="font-weight:700; color:#5a4636;">Save table for checkout</label>
-            <select name="table_number" style="padding: 12px 14px; border-radius: 14px; border:1px solid #d7c3b3;">
-                <option value="">Select table (optional)</option>
-                <?php for ($i = 1; $i <= 20; $i++): ?>
-                    <option value="Table <?php echo $i; ?>" <?php echo ($tableNumber === 'Table ' . $i) ? 'selected' : ''; ?>>Table <?php echo $i; ?></option>
-                <?php endfor; ?>
-            </select>
-            <button type="submit" class="button">Save Table</button>
-        </form>
-
-        <?php if ($tableNumber): ?>
-            <div class="message-bar">Selected table: <strong><?php echo esc($tableNumber); ?></strong>. You can change it before checkout.</div>
-        <?php endif; ?>
-
         <?php if (!empty($popularItems)): ?>
             <section>
                 <div class="section-title">
@@ -117,7 +85,6 @@ $tableNumber = $_SESSION['table_number'] ?? '';
                 <div class="menu-grid" id="popular-section">
                     <?php foreach ($popularItems as $item): ?>
                         <article class="menu-card" data-name="<?php echo esc(strtolower($item['name'])); ?>" data-category="<?php echo esc($item['category']); ?>" data-available="<?php echo !empty($item['available']) ? 'true' : 'false'; ?>">
-                            <img src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>" loading="lazy" decoding="async">
                             <div class="menu-card-body">
                                 <div>
                                     <h3 class="menu-card-title"><?php echo esc($item['name']); ?></h3>
@@ -157,7 +124,6 @@ $tableNumber = $_SESSION['table_number'] ?? '';
                     <?php else: ?>
                         <?php foreach ($items as $item): ?>
                             <article class="menu-card" data-name="<?php echo esc(strtolower($item['name'])); ?>" data-category="<?php echo esc($item['category']); ?>" data-available="<?php echo !empty($item['available']) ? 'true' : 'false'; ?>">
-                                <img src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>" loading="lazy" decoding="async">
                                 <div class="menu-card-body">
                                     <div>
                                         <h3 class="menu-card-title"><?php echo esc($item['name']); ?></h3>
@@ -179,23 +145,45 @@ $tableNumber = $_SESSION['table_number'] ?? '';
         <?php endforeach; ?>
     </main>
 
-    <div class="cart-bubble">
-        <a href="cart.php">
-            <span>🛒 Cart</span>
-            <span class="cart-count"><?php echo (int)$cartCount; ?></span>
-        </a>
+    <footer class="footer">© <?php echo date('Y'); ?> Cozy Corner Café. Designed for fast local ordering.</footer>
+
+    <div class="login-bubble">
+        <a href="<?php echo esc($adminLink); ?>"><?php echo esc($adminLabel); ?></a>
     </div>
 
-    <footer class="footer">© <?php echo date('Y'); ?> Cozy Corner Café. Designed for fast local ordering.</footer>
+    <div class="cart-bubble">
+        <a href="cart.php">🛒 <span class="cart-count"><?php echo (int)$cartCount; ?></span></a>
+    </div>
 
     <script>
         const filters = document.querySelectorAll('.filter-button');
         const sections = document.querySelectorAll('section[data-section]');
         const searchInput = document.getElementById('searchInput');
+        const popularSection = document.getElementById('popular-section');
 
         function applyFilters() {
             const searchText = searchInput.value.trim().toLowerCase();
             const activeFilter = document.querySelector('.filter-button.active').dataset.filter;
+
+            if (popularSection) {
+                const popularParent = popularSection.closest('section');
+                const popularCards = popularSection.querySelectorAll('.menu-card');
+                let popularVisible = false;
+
+                popularCards.forEach(card => {
+                    const name = card.dataset.name;
+                    const matchesSearch = !searchText || name.includes(searchText);
+                    const visible = matchesSearch && activeFilter === 'all';
+                    card.style.display = visible ? 'grid' : 'none';
+                    if (visible) {
+                        popularVisible = true;
+                    }
+                });
+
+                if (popularParent) {
+                    popularParent.style.display = popularVisible ? 'block' : 'none';
+                }
+            }
 
             sections.forEach(section => {
                 const cards = section.querySelectorAll('.menu-card');
@@ -226,6 +214,12 @@ $tableNumber = $_SESSION['table_number'] ?? '';
         });
 
         searchInput.addEventListener('input', applyFilters);
+
+        const cartBubble = document.querySelector('.cart-bubble');
+        if (cartBubble) {
+            cartBubble.classList.add('pulse');
+            setTimeout(() => cartBubble.classList.remove('pulse'), 1800);
+        }
     </script>
 </body>
 </html>
