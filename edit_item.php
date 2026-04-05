@@ -138,6 +138,5 @@
                 messageDiv.style.display = 'none';
             }, 3000);
         }
-    </script>
-</body>
+    </script>\r\n    <script src="app.js"></script>\r\n</body>
 </html>

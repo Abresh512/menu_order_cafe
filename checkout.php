@@ -99,13 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $orders = loadJson('orders.json');
-        $orderId = 1;
-        foreach ($orders as $order) {
-            $orderId = max($orderId, intval($order['id']) + 1);
-        }
 
         $order = [
-            'id' => $orderId,
+            'id' => uniqid('order_', true),
+            'date' => date('Y-m-d'),
             'items' => $items,
             'total' => round($total, 2),
             'table_number' => $tableNumber,
@@ -169,7 +166,10 @@ $estimatedMinutes = rand(14, 24);
             </div>
             <div style="margin-top: 24px; display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;">
                 <p style="margin:0; font-size:1.1rem; color:#4a3a2c;">Total paid: <strong><?php echo number_format($orderSummary['total'], 2); ?> Birr</strong></p>
-                <a class="button" href="index.php">Back to Menu</a>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <a class="button" href="index.php">Back to Menu</a>
+                    <a class="button-secondary" href="orders.php">View My Orders</a>
+                </div>
             </div>
         <?php else: ?>
             <section class="section-title">
@@ -241,5 +241,6 @@ $estimatedMinutes = rand(14, 24);
             </article>
         <?php endif; ?>
     </main>
+    <script src="app.js"></script>
 </body>
 </html>

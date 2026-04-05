@@ -32,51 +32,101 @@ if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
 $flash = $_SESSION['flash'] ?? '';
 unset($_SESSION['flash']);
 
+$ajax = isset($_GET['ajax']) && $_GET['ajax'];
 $action = $_GET['action'] ?? '';
 $itemId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+function sendJson($data) {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode($data);
+    exit;
+}
+
+function buildCartSummary($menu, $message = '') {
+    $items = [];
+    $total = 0.0;
+
+    foreach ($_SESSION['cart'] as $id => $quantity) {
+        $item = findMenuItem($menu, $id);
+        if (!$item) {
+            continue;
+        }
+        $quantity = intval($quantity);
+        if ($quantity < 1) {
+            continue;
+        }
+        $subtotal = $item['price'] * $quantity;
+        $items[] = [
+            'id' => $item['id'],
+            'name' => $item['name'],
+            'price' => $item['price'],
+            'quantity' => $quantity,
+            'subtotal' => $subtotal,
+        ];
+        $total += $subtotal;
+    }
+
+    return [
+        'items' => $items,
+        'total' => round($total, 2),
+        'count' => array_sum($_SESSION['cart']),
+        'message' => $message,
+    ];
+}
 
 if ($itemId > 0 && in_array($action, ['add', 'plus', 'minus', 'remove'], true)) {
     $item = findMenuItem($menu, $itemId);
     if (!$item) {
+        if ($ajax) {
+            sendJson(buildCartSummary($menu, 'Menu item not found.'));
+        }
         $_SESSION['flash'] = 'Menu item not found.';
         header('Location: cart.php');
         exit;
     }
 
     $itemKey = (string)$itemId;
+    $message = '';
+
     if ($action === 'remove') {
         unset($_SESSION['cart'][$itemKey]);
-        $_SESSION['flash'] = 'Item removed from cart.';
-        header('Location: cart.php');
-        exit;
+        $message = 'Item removed from cart.';
     }
 
     if ($action === 'add' || $action === 'plus') {
         if (empty($item['available'])) {
-            $_SESSION['flash'] = 'This item is currently out of stock.';
+            $message = 'This item is currently out of stock.';
         } else {
             $quantity = $_SESSION['cart'][$itemKey] ?? 0;
             if ($quantity < 20) {
                 $_SESSION['cart'][$itemKey] = $quantity + 1;
             }
-            $_SESSION['flash'] = 'Item added to cart.';
+            $message = 'Item added to cart.';
         }
-        header('Location: cart.php');
-        exit;
     }
 
     if ($action === 'minus') {
         $quantity = $_SESSION['cart'][$itemKey] ?? 0;
         if ($quantity > 1) {
             $_SESSION['cart'][$itemKey] = $quantity - 1;
-            $_SESSION['flash'] = 'Quantity updated.';
+            $message = 'Quantity updated.';
         } else {
             unset($_SESSION['cart'][$itemKey]);
-            $_SESSION['flash'] = 'Item removed from cart.';
+            $message = 'Item removed from cart.';
         }
-        header('Location: cart.php');
-        exit;
     }
+
+    if ($ajax) {
+        sendJson(buildCartSummary($menu, $message));
+    }
+
+    $_SESSION['flash'] = $message;
+    header('Location: cart.php');
+    exit;
+}
+
+if ($ajax) {
+    sendJson(buildCartSummary($menu));
 }
 
 $cartItems = [];
@@ -181,5 +231,6 @@ $tableNumber = $_SESSION['table_number'] ?? '';
             </div>
         <?php endif; ?>
     </main>
+    <script src="app.js"></script>
 </body>
 </html>

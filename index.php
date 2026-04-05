@@ -15,6 +15,7 @@ function loadJson($file) {
     return is_array($data) ? $data : [];
 }
 
+
 $menu = loadJson('menu.json');
 $categories = ['Breakfast', 'Lunch', 'Dinner', 'Drinks'];
 $popularItems = array_values(array_filter($menu, function ($item) {
@@ -23,22 +24,12 @@ $popularItems = array_values(array_filter($menu, function ($item) {
 $cartCount = array_sum($_SESSION['cart'] ?? []);
 
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_number'])) {
-    $selected = trim($_POST['table_number']);
-    if ($selected !== '') {
-        $_SESSION['table_number'] = $selected;
-        header('Location: index.php?message=' . urlencode('Table selected for checkout.'));
-        exit;
-    }
-}
-
 if (isset($_GET['message'])) {
     $message = $_GET['message'];
 }
 
 $adminLink = !empty($_SESSION['admin_user']) ? 'admin_orders.php' : 'login.php';
 $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
-$tableNumber = $_SESSION['table_number'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,7 +86,7 @@ $tableNumber = $_SESSION['table_number'] ?? '';
                                     <span class="status-pill <?php echo !empty($item['available']) ? 'status-available' : 'status-unavailable'; ?>"><?php echo !empty($item['available']) ? 'In stock' : 'Out of stock'; ?></span>
                                 </div>
                                 <div class="menu-card-actions">
-                                    <a class="button" href="cart.php?action=add&id=<?php echo esc($item['id']); ?>" <?php echo empty($item['available']) ? 'aria-disabled="true" disabled' : ''; ?>>Add to Cart</a>
+                                    <button type="button" class="button cart-add" data-item-id="<?php echo esc($item['id']); ?>" <?php echo empty($item['available']) ? 'aria-disabled="true" disabled' : ''; ?>>Add</button>
                                 </div>
                             </div>
                         </article>
@@ -134,7 +125,7 @@ $tableNumber = $_SESSION['table_number'] ?? '';
                                         <span class="status-pill <?php echo !empty($item['available']) ? 'status-available' : 'status-unavailable'; ?>"><?php echo !empty($item['available']) ? 'In stock' : 'Out of stock'; ?></span>
                                     </div>
                                     <div class="menu-card-actions">
-                                        <a class="button" href="cart.php?action=add&id=<?php echo esc($item['id']); ?>" <?php echo empty($item['available']) ? 'aria-disabled="true" disabled' : ''; ?>>Add to Cart</a>
+                                        <button type="button" class="button cart-add" data-item-id="<?php echo esc($item['id']); ?>" <?php echo empty($item['available']) ? 'aria-disabled="true" disabled' : ''; ?>>Add</button>
                                     </div>
                                 </div>
                             </article>
@@ -145,15 +136,39 @@ $tableNumber = $_SESSION['table_number'] ?? '';
         <?php endforeach; ?>
     </main>
 
+    <div class="drawer-overlay"></div>
+    <aside class="cart-drawer" aria-hidden="true">
+        <div class="drawer-header">
+            <div>
+                <h2>Your Cart</h2>
+                <p class="drawer-subtitle">Review items and checkout quickly.</p>
+            </div>
+            <button type="button" class="drawer-close" aria-label="Close cart">×</button>
+        </div>
+        <div class="cart-content">
+            <div class="cart-empty">No items yet. Browse the menu and tap Add.</div>
+            <div class="cart-items"></div>
+        </div>
+        <div class="drawer-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <strong>0.00 Birr</strong>
+            </div>
+            <button type="button" class="button checkout-button" disabled>Checkout</button>
+        </div>
+    </aside>
+    <div id="toast" class="toast" aria-live="polite"></div>
+
     <footer class="footer">© <?php echo date('Y'); ?> Cozy Corner Café. Designed for fast local ordering.</footer>
 
+    <div class="orders-bubble">
+        <a href="orders.php">My Orders</a>
+    </div>
     <div class="login-bubble">
         <a href="<?php echo esc($adminLink); ?>"><?php echo esc($adminLabel); ?></a>
     </div>
 
-    <div class="cart-bubble">
-        <a href="cart.php">🛒 <span class="cart-count"><?php echo (int)$cartCount; ?></span></a>
-    </div>
+    <button type="button" class="cart-bubble" aria-label="Open cart">🛒 <span class="cart-count"><?php echo (int)$cartCount; ?></span></button>
 
     <script>
         const filters = document.querySelectorAll('.filter-button');
@@ -215,11 +230,139 @@ $tableNumber = $_SESSION['table_number'] ?? '';
 
         searchInput.addEventListener('input', applyFilters);
 
+        const drawer = document.querySelector('.cart-drawer');
+        const overlay = document.querySelector('.drawer-overlay');
+        const drawerClose = document.querySelector('.drawer-close');
+        const cartItemsContainer = document.querySelector('.cart-items');
+        const cartEmpty = document.querySelector('.cart-empty');
+        const cartTotalValue = document.querySelector('.cart-total strong');
+        const checkoutButton = document.querySelector('.checkout-button');
+        const toast = document.getElementById('toast');
         const cartBubble = document.querySelector('.cart-bubble');
-        if (cartBubble) {
-            cartBubble.classList.add('pulse');
-            setTimeout(() => cartBubble.classList.remove('pulse'), 1800);
+
+        function fetchCart(action = 'summary', id = null) {
+            const url = new URL('cart.php', location.href);
+            url.searchParams.set('ajax', '1');
+            url.searchParams.set('action', action);
+            if (id) {
+                url.searchParams.set('id', id);
+            }
+            return fetch(url.toString(), { credentials: 'same-origin' }).then(response => response.json());
         }
-    </script>
-</body>
+
+        function renderCart(data) {
+            if (!data) {
+                return;
+            }
+            document.querySelector('.cart-count').textContent = data.count;
+            if (cartTotalValue) {
+                cartTotalValue.textContent = data.total.toFixed(2) + ' Birr';
+            }
+
+            if (!data.items.length) {
+                if (cartEmpty) cartEmpty.style.display = 'block';
+                if (cartItemsContainer) cartItemsContainer.innerHTML = '';
+                if (checkoutButton) {
+                    checkoutButton.disabled = true;
+                    checkoutButton.setAttribute('aria-disabled', 'true');
+                }
+                return;
+            }
+
+            if (cartEmpty) cartEmpty.style.display = 'none';
+            if (checkoutButton) {
+                checkoutButton.disabled = false;
+                checkoutButton.removeAttribute('aria-disabled');
+            }
+            if (!cartItemsContainer) return;
+
+            cartItemsContainer.innerHTML = data.items.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <strong>${item.name}</strong>
+                        <span>${item.quantity} × ${item.price.toFixed(2)} Birr</span>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button type="button" data-action="minus" data-id="${item.id}">−</button>
+                        <span>${item.quantity}</span>
+                        <button type="button" data-action="plus" data-id="${item.id}">+</button>
+                        <button type="button" class="cart-remove" data-action="remove" data-id="${item.id}">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openDrawer() {
+            if (overlay) overlay.classList.add('visible');
+            if (drawer) drawer.classList.add('open');
+            if (drawer) drawer.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeDrawer() {
+            if (overlay) overlay.classList.remove('visible');
+            if (drawer) drawer.classList.remove('open');
+            if (drawer) drawer.setAttribute('aria-hidden', 'true');
+        }
+
+        function showToast(message) {
+            if (!toast || !message) return;
+            toast.textContent = message;
+            toast.classList.add('visible');
+            window.clearTimeout(toast.timeoutId);
+            toast.timeoutId = window.setTimeout(() => toast.classList.remove('visible'), 3000);
+        }
+
+        document.querySelectorAll('.cart-add').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                const id = button.dataset.itemId;
+                fetchCart('add', id).then(data => {
+                    renderCart(data);
+                    openDrawer();
+                    showToast(data.message || 'Added to cart');
+                });
+            });
+        });
+
+        if (cartBubble) {
+            cartBubble.addEventListener('click', event => {
+                event.preventDefault();
+                fetchCart().then(data => {
+                    renderCart(data);
+                    openDrawer();
+                });
+
+                cartBubble.classList.add('pulse');
+                setTimeout(() => cartBubble.classList.remove('pulse'), 1800);
+            });
+        }
+
+        if (checkoutButton) {
+            checkoutButton.addEventListener('click', () => {
+                if (!checkoutButton.disabled) {
+                    window.location.href = 'checkout.php';
+                }
+            });
+        }
+
+        fetchCart().then(data => {
+            renderCart(data);
+        });
+
+        if (overlay) overlay.addEventListener('click', closeDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+
+        if (cartItemsContainer) {
+            cartItemsContainer.addEventListener('click', event => {
+                const button = event.target.closest('[data-action]');
+                if (!button) return;
+                const action = button.dataset.action;
+                const id = button.dataset.id;
+                fetchCart(action, id).then(data => {
+                    renderCart(data);
+                    showToast(data.message || 'Cart updated');
+                });
+            });
+        }
+    </script>\r\n    <script src="app.js"></script>\r\n</body>
 </html>

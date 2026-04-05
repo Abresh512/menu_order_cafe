@@ -205,5 +205,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
     </script>
+    <script src="app.js"></script>
 </body>
 </html>

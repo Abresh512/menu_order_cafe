@@ -20,7 +20,8 @@ if (isset($_GET['logout'])) {
     session_destroy();
     session_start();
     session_regenerate_id(true);
-    $logoutMessage = 'You have been logged out.';
+    header('Location: index.php?message=' . urlencode('You have been logged out.'));
+    exit;
 }
 
 if (!empty($_SESSION['admin_user'])) {
@@ -96,5 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </article>
     </main>
+    <script src="app.js"></script>
 </body>
 </html>

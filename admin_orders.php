@@ -27,23 +27,41 @@ if (empty($_SESSION['admin_user'])) {
 $orders = loadJson('orders.json');
 $menu = loadJson('menu.json');
 $message = '';
+$filterDate = $_GET['filter_date'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
-    $updateId = intval($_POST['order_id']);
-    $newStatus = trim($_POST['status']);
-    $allowed = ['Pending', 'Preparing', 'Ready', 'Completed'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['action'])) {
+    $orderId = trim($_POST['order_id']);
+    $action = trim($_POST['action']);
 
-    foreach ($orders as &$order) {
-        if (intval($order['id']) === $updateId) {
-            if (in_array($newStatus, $allowed, true)) {
-                $order['status'] = $newStatus;
-                $message = 'Order status updated.';
-            }
-            break;
+    if ($action === 'delete') {
+        $beforeCount = count($orders);
+        $orders = array_values(array_filter($orders, function ($order) use ($orderId) {
+            return (string)$order['id'] !== (string)$orderId;
+        }));
+
+        if (count($orders) < $beforeCount) {
+            saveJson('orders.json', $orders);
+            $message = 'Order deleted.';
+        } else {
+            $message = 'Order not found.';
         }
+    } elseif ($action === 'update' && isset($_POST['status'])) {
+        $newStatus = trim($_POST['status']);
+        $allowed = ['Pending', 'Preparing', 'Ready', 'Completed'];
+
+        foreach ($orders as &$order) {
+            if ((string)$order['id'] === (string)$orderId) {
+                if (in_array($newStatus, $allowed, true)) {
+                    $order['status'] = $newStatus;
+                    $message = 'Order status updated.';
+                }
+                break;
+            }
+        }
+        unset($order);
+        saveJson('orders.json', $orders);
     }
-    unset($order);
-    saveJson('orders.json', $orders);
+
     header('Location: admin_orders.php?message=' . urlencode($message));
     exit;
 }
@@ -63,6 +81,13 @@ foreach ($orders as $order) {
         $name = $item['name'];
         $itemCounts[$name] = ($itemCounts[$name] ?? 0) + intval($item['quantity']);
     }
+}
+
+$displayOrders = $orders;
+if ($filterDate) {
+    $displayOrders = array_values(array_filter($orders, function ($order) use ($filterDate) {
+        return isset($order['date']) && $order['date'] === $filterDate;
+    }));
 }
 
 arsort($itemCounts);
@@ -125,6 +150,13 @@ function timeAgo($timestamp) {
             </div>
         </section>
 
+        <form method="get" style="margin-bottom:18px; display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <label for="filter_date" style="font-weight:600; color:#3c2f25;">Filter by date:</label>
+            <input type="date" id="filter_date" name="filter_date" value="<?php echo esc($filterDate); ?>" style="padding:10px 12px; border:1px solid #d7c9b9; border-radius:12px;">
+            <button type="submit" class="button-secondary">Apply</button>
+            <a class="button-secondary" href="admin_orders.php">Clear</a>
+        </form>
+
         <?php if ($message): ?>
             <div class="message-bar"><?php echo esc($message); ?></div>
         <?php endif; ?>
@@ -159,12 +191,12 @@ function timeAgo($timestamp) {
             <?php if (empty($orders)): ?>
                 <div class="order-card"><p style="margin:0; color:#5f4b42;">No orders yet.</p></div>
             <?php else: ?>
-                <?php foreach (array_reverse($orders) as $order): ?>
+                <?php foreach (array_reverse($displayOrders) as $order): ?>
                     <article class="order-card">
                         <div class="order-header">
                             <div>
                                 <strong>Order #<?php echo esc($order['id']); ?></strong>
-                                <p class="order-meta">Table <?php echo esc($order['table_number']); ?> • <?php echo esc(timeAgo($order['timestamp'])); ?> • <?php echo esc($order['payment_method']); ?></p>
+                                <p class="order-meta"><?php echo esc($order['date'] ?? date('Y-m-d', intval($order['timestamp']))); ?> • Table <?php echo esc($order['table_number']); ?> • <?php echo esc(timeAgo($order['timestamp'])); ?> • <?php echo esc($order['payment_method']); ?></p>
                             </div>
                             <span class="status-pill status-<?php echo esc($order['status']); ?>"><?php echo esc($order['status']); ?></span>
                         </div>
@@ -186,6 +218,7 @@ function timeAgo($timestamp) {
                         <?php endif; ?>
                         <form class="order-actions" method="post">
                             <input type="hidden" name="order_id" value="<?php echo esc($order['id']); ?>">
+                            <input type="hidden" name="action" value="update">
                             <select name="status" aria-label="Update status">
                                 <?php foreach (['Pending', 'Preparing', 'Ready', 'Completed'] as $statusOption): ?>
                                     <option value="<?php echo esc($statusOption); ?>" <?php echo $order['status'] === $statusOption ? 'selected' : ''; ?>><?php echo esc($statusOption); ?></option>
@@ -193,10 +226,16 @@ function timeAgo($timestamp) {
                             </select>
                             <button type="submit" class="button-secondary">Update</button>
                         </form>
+                        <form class="order-actions" method="post" onsubmit="return confirm('Delete this order?');">
+                            <input type="hidden" name="order_id" value="<?php echo esc($order['id']); ?>">
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" class="button-secondary">Delete</button>
+                        </form>
                     </article>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </main>
+    <script src="app.js"></script>
 </body>
 </html>
