@@ -1,62 +1,42 @@
 [
     {
-        "id": "order_69d2cb1ac8daa4.23781369",
-        "date": "2026-04-05",
+        "id": "order_69d2ea160acb64.95665034",
+        "date": "2026-04-06",
         "items": [
             {
-                "name": "Cold Brew Latte",
-                "price": 80,
-                "quantity": 3,
-                "subtotal": 240
+                "name": "Burger",
+                "price": 300,
+                "quantity": 1,
+                "subtotal": 300
             }
         ],
-        "total": 240,
-        "table_number": "Table 7",
-        "customer_name": "oji;oi",
-        "phone": "7412558",
+        "total": 300,
+        "table_number": "Table 13",
+        "customer_name": "kira",
+        "phone": "1212121212",
         "notes": "",
         "payment_method": "cash",
         "status": "Completed",
-        "timestamp": 1775422234
+        "timestamp": 1775430166
     },
     {
-        "id": "order_69d2cba48269f3.07485015",
-        "date": "2026-04-05",
+        "id": "order_69d2f185d0c3b0.68338311",
+        "date": "2026-04-06",
         "items": [
             {
-                "name": "Cold Brew Latte",
-                "price": 80,
+                "name": "Burger",
+                "price": 300,
                 "quantity": 5,
-                "subtotal": 400
+                "subtotal": 1500
             }
         ],
-        "total": 400,
-        "table_number": "Table 5",
-        "customer_name": "Solix",
-        "phone": "8798765456789",
+        "total": 1500,
+        "table_number": "Table 11",
+        "customer_name": "Abraham Tadesse",
+        "phone": "0930383286",
         "notes": "",
         "payment_method": "cash",
-        "status": "Ready",
-        "timestamp": 1775422372
-    },
-    {
-        "id": "order_69d2ccc7471c54.39192997",
-        "date": "2026-04-05",
-        "items": [
-            {
-                "name": "Cold Brew Latte",
-                "price": 80,
-                "quantity": 3,
-                "subtotal": 240
-            }
-        ],
-        "total": 240,
-        "table_number": "Table 7",
-        "customer_name": "Abe",
-        "phone": "1234567899",
-        "notes": "",
-        "payment_method": "cash",
-        "status": "Preparing",
-        "timestamp": 1775422663
+        "status": "Pending",
+        "timestamp": 1775432069
     }
 ]

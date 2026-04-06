@@ -83,10 +83,10 @@ function formatDate($date) {
 
         <article class="form-card" style="margin-bottom:30px;">
             <form method="post">
-                <label for="customer_name">Customer Name</label>
+                <label for="customer_name"><strong>Customer Name</strong></label>
                 <input id="customer_name" type="text" name="customer_name" value="<?php echo esc($searchName); ?>" required>
 
-                <label for="phone">Phone Number</label>
+                <label for="phone"><strong>Phone Number</strong></label>
                 <input id="phone" type="tel" name="phone" value="<?php echo esc($searchPhone); ?>" required placeholder="e.g. +251 900 000000">
 
                 <button type="submit" class="button">Search Orders</button>
@@ -112,7 +112,7 @@ function formatDate($date) {
                             </div>
 
                             <div style="margin-top:14px; color:#5a4636;">
-                                <p style="margin:0 0 8px;">Customer: <?php echo esc($order['customer_name']); ?> • Phone: <?php echo esc($order['phone']); ?></p>
+                                <p style="margin:0 0 8px;"><strong>Customer:</strong> <?php echo esc($order['customer_name']); ?> • <strong>Phone:</strong> <?php echo esc($order['phone']); ?></p>
                                 <?php if (!empty($order['notes'])): ?>
                                     <p style="margin:0 0 8px;"><strong>Notes:</strong> <?php echo esc($order['notes']); ?></p>
                                 <?php endif; ?>
@@ -123,7 +123,7 @@ function formatDate($date) {
                                     <div style="width:100%; display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid #e9ded3;">
                                         <div>
                                             <strong><?php echo esc($item['name']); ?></strong>
-                                            <div style="color:#6c5b4d; font-size:.95rem;">Qty <?php echo esc($item['quantity']); ?> • <?php echo number_format($item['price'], 2); ?> Birr</div>
+                                            <div style="color:#6c5b4d; font-size:.95rem;"><strong>Quantity:</strong> <?php echo esc($item['quantity']); ?> • <?php echo number_format($item['price'], 2); ?> Birr</div>
                                         </div>
                                         <div style="font-weight:700; color:#3c2f25;"><?php echo number_format($item['subtotal'], 2); ?> Birr</div>
                                     </div>

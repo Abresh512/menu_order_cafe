@@ -52,7 +52,10 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
 
     <main class="page-shell">
         <?php if ($message): ?>
-            <div class="message-bar"><?php echo esc($message); ?></div>
+            <div class="message-bar" id="messageBar">
+                <?php echo esc($message); ?>
+                <button type="button" class="message-close" onclick="hideMessage()">×</button>
+            </div>
         <?php endif; ?>
 
         <div class="nav-row">
@@ -119,6 +122,9 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                                     <div>
                                         <h3 class="menu-card-title"><?php echo esc($item['name']); ?></h3>
                                         <p class="menu-card-description"><?php echo esc($item['description']); ?></p>
+                                    </div>
+                                    <div class="menu-card-image">
+                                        <img src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>">
                                     </div>
                                     <div class="menu-card-meta">
                                         <span class="menu-card-price"><?php echo number_format($item['price'], 2); ?> Birr</span>
@@ -364,5 +370,32 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                 });
             });
         }
-    </script>\r\n    <script src="app.js"></script>\r\n</body>
+
+        // Auto-hide message functionality
+        function hideMessage() {
+            const messageBar = document.getElementById('messageBar');
+            if (messageBar) {
+                messageBar.style.opacity = '0';
+                messageBar.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    messageBar.style.display = 'none';
+                }, 300);
+            }
+        }
+        
+        // Clear message from URL to prevent re-appearance on refresh
+        function clearMessageFromURL() {
+            const url = new URL(window.location);
+            url.searchParams.delete('message');
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Auto-hide message after 5 seconds and clear URL
+        setTimeout(() => {
+            hideMessage();
+            clearMessageFromURL();
+        }, 5000);
+    </script>
+    <script src="app.js"></script>
+</body>
 </html>

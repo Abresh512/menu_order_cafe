@@ -111,75 +111,261 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Menu Item — Cozy Corner Café</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--primary);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .admin-header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .admin-title h1 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.8rem;
+        }
+        
+        .admin-title p {
+            margin: 4px 0 0;
+            color: var(--text-secondary);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .add-item-form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .form-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+        
+        @media (min-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+        
+        .checkbox-label:hover {
+            background: var(--bg);
+        }
+        
+        .checkbox-label input {
+            margin: 0;
+        }
+        
+        .image-preview {
+            margin-top: 12px;
+            text-align: center;
+        }
+        
+        .image-preview img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+        }
+    </style>
 </head>
 <body>
-    <main class="page-shell" style="max-width: 720px; padding-top: 40px;">
-        <section class="section-title">
-            <div>
-                <h2>Add New Menu Item</h2>
-                <p style="margin:8px 0 0; color:#6c5b4d;">Create a new menu entry for breakfast, lunch, dinner, or drinks.</p>
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-title">
+                <h1>Add Menu Item</h1>
+                <p>Create new menu items for your café</p>
             </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <a class="button-secondary" href="admin_orders.php">Dashboard</a>
-                <a class="button-secondary" href="index.php">View Menu</a>
+            <div class="admin-actions">
+                <a href="admin_orders.php" class="button-secondary">Manage Orders</a>
+                <a href="index.php" class="button-secondary">View Menu</a>
+                <a href="login.php?logout=1" class="button">Logout</a>
             </div>
-        </section>
+        </div>
+    </header>
 
+    <main class="page-shell">
         <?php if ($success): ?>
-            <div class="message-bar" style="border-color:#c7e8d6; background:#eff6f0; color:#165c3f;">
-                New menu item added successfully.
+            <div class="message-bar" id="messageBar">
+                New menu item added successfully!
+                <button type="button" class="message-close" onclick="hideMessage()">×</button>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($errors)): ?>
-            <div class="message-bar" style="border-color:#f1c0c0; background:#fdefef; color:#822b2b;">
-                <ul style="margin:0; padding-left:18px;">
+            <div class="message-bar" style="border-color: var(--error); background: rgba(220,38,38,0.1); color: var(--error);">
+                <ul style="margin: 0; padding-left: 18px;">
                     <?php foreach ($errors as $error): ?>
                         <li><?php echo esc($error); ?></li>
                     <?php endforeach; ?>
                 </ul>
+                <button type="button" class="message-close" onclick="this.parentElement.style.display='none'">×</button>
             </div>
         <?php endif; ?>
 
-        <article class="form-card">
+        <article class="add-item-form">
             <form method="post" enctype="multipart/form-data">
-                <label for="name">Name</label>
-                <input id="name" type="text" name="name" value="<?php echo esc($name); ?>" required>
-
-                <label for="description">Description</label>
-                <textarea id="description" name="description" rows="3"><?php echo esc($description); ?></textarea>
-
-                <label for="price">Price (Birr)</label>
-                <input id="price" type="number" name="price" step="0.01" value="<?php echo esc($price); ?>" required>
-
-                <label for="image_file">Upload Image</label>
-                <input id="image_file" type="file" name="image_file" accept="image/*" required>
-                <div id="image-preview" style="margin-top:10px; display:none;">
-                    <img id="preview-img" src="" alt="Image Preview" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name"><strong>Item Name</strong></label>
+                            <input id="name" type="text" name="name" value="<?php echo esc($name); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price"><strong>Price (Birr)</strong></label>
+                            <input id="price" type="number" name="price" step="0.01" value="<?php echo esc($price); ?>" required>
+                        </div>
+                    </div>
                 </div>
 
-                <label for="category">Category</label>
-                <select id="category" name="category" required>
-                    <?php foreach (["Breakfast", "Lunch", "Dinner", "Drinks"] as $option): ?>
-                        <option value="<?php echo esc($option); ?>" <?php echo $category === $option ? 'selected' : ''; ?>><?php echo esc($option); ?></option>
-                    <?php endforeach; ?>
-                </select>
-
-                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
-                    <label><input type="checkbox" name="available" <?php echo $available ? 'checked' : ''; ?>> In stock</label>
-                    <label><input type="checkbox" name="popular" <?php echo $popular ? 'checked' : ''; ?>> Popular item</label>
+                <div class="form-section">
+                    <h3>Category & Image</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category"><strong>Category</strong></label>
+                            <select id="category" name="category" required>
+                                <?php foreach (["Breakfast", "Lunch", "Dinner", "Drinks"] as $option): ?>
+                                    <option value="<?php echo esc($option); ?>" <?php echo $category === $option ? 'selected' : ''; ?>><?php echo esc($option); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="image_file"><strong>Upload Image</strong></label>
+                            <input id="image_file" type="file" name="image_file" accept="image/*" required>
+                        </div>
+                    </div>
                 </div>
 
-                <button type="submit" class="button" style="margin-top:20px;">Add Item</button>
+                <div class="form-section">
+                    <h3>Description</h3>
+                    <div class="form-group full-width">
+                        <label for="description"><strong>Item Description</strong></label>
+                        <textarea id="description" name="description" rows="4" required><?php echo esc($description); ?></textarea>
+                    </div>
+                </div>
+
+                <div class="image-preview" id="image-preview">
+                    <img id="preview-img" src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=900&q=80" alt="Image Preview">
+                </div>
+
+                <div class="form-section">
+                    <h3>Options</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" name="available" <?php echo $available ? 'checked' : ''; ?>> <strong>In Stock</strong></label>
+                        <label class="checkbox-label"><input type="checkbox" name="popular" <?php echo $popular ? 'checked' : ''; ?>> <strong>Popular Item</strong></label>
+                    </div>
+                </div>
+
+                <button type="submit" class="button">Add Menu Item</button>
             </form>
         </article>
     </main>
 
     <script>
+        function hideMessage() {
+            const messageBar = document.getElementById('messageBar');
+            if (messageBar) {
+                messageBar.style.opacity = '0';
+                messageBar.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    messageBar.style.display = 'none';
+                }, 300);
+            }
+        }
+        
+        // Clear message from URL to prevent re-appearance on refresh
+        function clearMessageFromURL() {
+            const url = new URL(window.location);
+            url.searchParams.delete('message');
+            window.history.replaceState({}, '', url);
+        }
+        
+        // Auto-hide message after 5 seconds and clear URL
+        setTimeout(() => {
+            hideMessage();
+            clearMessageFromURL();
+        }, 5000);
+
+        // Image preview functionality
         document.getElementById('image_file').addEventListener('change', function(event) {
             const file = event.target.files[0];
             const preview = document.getElementById('image-preview');
             const img = document.getElementById('preview-img');
+            
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -192,15 +378,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         });
 
-        // Simple form validation feedback
+        // Form validation feedback
         const form = document.querySelector('form');
         const inputs = form.querySelectorAll('input, textarea, select');
+        
         inputs.forEach(input => {
             input.addEventListener('blur', function() {
                 if (this.checkValidity()) {
-                    this.style.borderColor = '#28a745';
+                    this.style.borderColor = 'var(--success)';
                 } else {
-                    this.style.borderColor = '#dc3545';
+                    this.style.borderColor = 'var(--error)';
                 }
             });
         });

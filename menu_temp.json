@@ -1,0 +1,102 @@
+[
+    {
+        "id": 1,
+        "name": "Honey Oat Pancakes",
+        "description": "Warm pancakes topped with honey, berries, and whipped yogurt.",
+        "price": 120,
+        "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+        "category": "Breakfast",
+        "available": true,
+        "popular": true
+    },
+    {
+        "id": 2,
+        "name": "Avocado Toast",
+        "description": "Crunchy sourdough with smashed avocado, lemon, and chili flakes.",
+        "price": 95,
+        "image": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=900&q=80",
+        "category": "Breakfast",
+        "available": true,
+        "popular": false
+    },
+    {
+        "id": 3,
+        "name": "Classic Cheeseburger",
+        "description": "Juicy beef patty, melted cheese, lettuce, tomato, and pickles.",
+        "price": 165,
+        "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80",
+        "category": "Lunch",
+        "available": true,
+        "popular": true
+    },
+    {
+        "id": 4,
+        "name": "Grilled Chicken Wrap",
+        "description": "Tender chicken, crisp greens, and house sauce in a soft wrap.",
+        "price": 135,
+        "image": "https://images.unsplash.com/photo-1512058564366-c9e1d0e5c958?auto=format&fit=crop&w=900&q=80",
+        "category": "Lunch",
+        "available": false,
+        "popular": false
+    },
+    {
+        "id": 5,
+        "name": "Mushroom Risotto",
+        "description": "Creamy risotto with wild mushrooms, parmesan, and herbs.",
+        "price": 180,
+        "image": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=900&q=80",
+        "category": "Dinner",
+        "available": true,
+        "popular": false
+    },
+    {
+        "id": 6,
+        "name": "Spicy Shrimp Tacos",
+        "description": "Soft tacos filled with chili shrimp, slaw, and avocado crema.",
+        "price": 175,
+        "image": "https://images.unsplash.com/photo-1514361892631-4ff78d4b3b1f?auto=format&fit=crop&w=900&q=80",
+        "category": "Dinner",
+        "available": true,
+        "popular": true
+    },
+    {
+        "id": 7,
+        "name": "Cold Brew Latte",
+        "description": "Smooth cold brew combined with creamy milk and ice.",
+        "price": 80,
+        "image": "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=900&q=80",
+        "category": "Drinks",
+        "available": true,
+        "popular": true
+    },
+    {
+        "id": 8,
+        "name": "Berry Hibiscus Tea",
+        "description": "Bright floral tea with fresh berries and citrus notes.",
+        "price": 62,
+        "image": "https://images.unsplash.com/photo-1464306076886-05b46f2fdf3c?auto=format&fit=crop&w=900&q=80",
+        "category": "Drinks",
+        "available": true,
+        "popular": false
+    },
+    {
+        "id": 9,
+        "name": "Pizza",
+        "description": "Pizzaria",
+        "price": 300,
+        "image": "uploads/side-view-pizza-with-chopped-pepper-board-cookware_1775424278.jpg",
+        "category": "Breakfast",
+        "available": true,
+        "popular": true
+    },
+    {
+        "id": 10,
+        "name": "Burger",
+        "description": "Burgerita",
+        "price": 390,
+        "image": "uploads/juicy-cheeseburger-rustic-wooden-board_1775424351.jpg",
+        "category": "Breakfast",
+        "available": true,
+        "popular": true
+    }
+]
