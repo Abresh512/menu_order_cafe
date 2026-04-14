@@ -29,104 +29,171 @@ if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-$flash = $_SESSION['flash'] ?? '';
-unset($_SESSION['flash']);
-
-$ajax = isset($_GET['ajax']) && $_GET['ajax'];
-$action = $_GET['action'] ?? '';
-$itemId = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-function sendJson($data) {
-    header('Content-Type: application/json; charset=UTF-8');
-    echo json_encode($data);
+// Handle AJAX requests
+if (isset($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    
+    $action = $_GET['action'] ?? '';
+    $itemId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    
+    if ($action === 'summary') {
+        $cartItems = [];
+        $total = 0.0;
+        $count = 0;
+        
+        foreach ($_SESSION['cart'] as $id => $quantity) {
+            $item = findMenuItem($menu, $id);
+            if (!$item) continue;
+            
+            $quantity = intval($quantity);
+            if ($quantity < 1) continue;
+            
+            $subtotal = $item['price'] * $quantity;
+            $cartItems[] = [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'quantity' => $quantity,
+                'subtotal' => $subtotal
+            ];
+            $total += $subtotal;
+            $count += $quantity;
+        }
+        
+        $response = [
+            'items' => $cartItems,
+            'total' => $total,
+            'count' => $count
+        ];
+    } elseif ($itemId > 0 && in_array($action, ['add', 'plus', 'minus', 'remove'], true)) {
+        $item = findMenuItem($menu, $itemId);
+        if (!$item) {
+            $response = ['error' => 'Menu item not found.'];
+        } else {
+            $itemKey = (string)$itemId;
+            $message = '';
+            
+            if ($action === 'remove') {
+                unset($_SESSION['cart'][$itemKey]);
+                $message = 'Item removed from cart.';
+            } elseif ($action === 'add' || $action === 'plus') {
+                if (empty($item['available'])) {
+                    $response = ['error' => 'This item is currently unavailable.'];
+                } else {
+                    $quantity = $_SESSION['cart'][$itemKey] ?? 0;
+                    if ($quantity < 20) {
+                        $_SESSION['cart'][$itemKey] = $quantity + 1;
+                        $message = 'Item added to cart.';
+                    } else {
+                        $response = ['error' => 'Maximum quantity reached.'];
+                    }
+                }
+            } elseif ($action === 'minus') {
+                $quantity = $_SESSION['cart'][$itemKey] ?? 0;
+                if ($quantity > 1) {
+                    $_SESSION['cart'][$itemKey] = $quantity - 1;
+                    $message = 'Quantity updated.';
+                } else {
+                    unset($_SESSION['cart'][$itemKey]);
+                    $message = 'Item removed from cart.';
+                }
+            }
+            
+            if (!isset($response['error'])) {
+                // Return updated cart summary after action
+                $cartItems = [];
+                $total = 0.0;
+                $count = 0;
+                
+                foreach ($_SESSION['cart'] as $id => $quantity) {
+                    $item = findMenuItem($menu, $id);
+                    if (!$item) continue;
+                    
+                    $quantity = intval($quantity);
+                    if ($quantity < 1) continue;
+                    
+                    $subtotal = $item['price'] * $quantity;
+                    $cartItems[] = [
+                        'id' => $item['id'],
+                        'name' => $item['name'],
+                        'price' => $item['price'],
+                        'quantity' => $quantity,
+                        'subtotal' => $subtotal
+                    ];
+                    $total += $subtotal;
+                    $count += $quantity;
+                }
+                
+                $response = [
+                    'items' => $cartItems,
+                    'total' => $total,
+                    'count' => $count,
+                    'message' => $message
+                ];
+            }
+        }
+    } else {
+        $response = ['error' => 'Invalid request'];
+    }
+    
+    echo json_encode($response);
     exit;
 }
 
-function buildCartSummary($menu, $message = '') {
-    $items = [];
-    $total = 0.0;
+$flash = $_SESSION['flash'] ?? '';
+unset($_SESSION['flash']);
 
-    foreach ($_SESSION['cart'] as $id => $quantity) {
-        $item = findMenuItem($menu, $id);
-        if (!$item) {
-            continue;
-        }
-        $quantity = intval($quantity);
-        if ($quantity < 1) {
-            continue;
-        }
-        $subtotal = $item['price'] * $quantity;
-        $items[] = [
-            'id' => $item['id'],
-            'name' => $item['name'],
-            'price' => $item['price'],
-            'quantity' => $quantity,
-            'subtotal' => $subtotal,
-        ];
-        $total += $subtotal;
-    }
+$action = $_GET['action'] ?? '';
+$itemId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    return [
-        'items' => $items,
-        'total' => round($total, 2),
-        'count' => array_sum($_SESSION['cart']),
-        'message' => $message,
-    ];
-}
-
-if ($itemId > 0 && in_array($action, ['add', 'plus', 'minus', 'remove'], true)) {
-    $item = findMenuItem($menu, $itemId);
-    if (!$item) {
-        if ($ajax) {
-            sendJson(buildCartSummary($menu, 'Menu item not found.'));
-        }
-        $_SESSION['flash'] = 'Menu item not found.';
-        header('Location: cart.php');
-        exit;
-    }
-
-    $itemKey = (string)$itemId;
+if ($itemId > 0 && in_array($action, ['add', 'plus', 'minus', 'remove', 'clear'], true)) {
     $message = '';
 
-    if ($action === 'remove') {
-        unset($_SESSION['cart'][$itemKey]);
-        $message = 'Item removed from cart.';
-    }
-
-    if ($action === 'add' || $action === 'plus') {
-        if (empty($item['available'])) {
-            $message = 'This item is currently out of stock.';
-        } else {
-            $quantity = $_SESSION['cart'][$itemKey] ?? 0;
-            if ($quantity < 20) {
-                $_SESSION['cart'][$itemKey] = $quantity + 1;
-            }
-            $message = 'Item added to cart.';
+    if ($action === 'clear') {
+        $_SESSION['cart'] = [];
+        $message = 'Cart cleared successfully.';
+    } else {
+        $item = findMenuItem($menu, $itemId);
+        if (!$item) {
+            $_SESSION['flash'] = 'Menu item not found.';
+            header('Location: cart.php');
+            exit;
         }
-    }
 
-    if ($action === 'minus') {
-        $quantity = $_SESSION['cart'][$itemKey] ?? 0;
-        if ($quantity > 1) {
-            $_SESSION['cart'][$itemKey] = $quantity - 1;
-            $message = 'Quantity updated.';
-        } else {
+        $itemKey = (string)$itemId;
+
+        if ($action === 'remove') {
             unset($_SESSION['cart'][$itemKey]);
             $message = 'Item removed from cart.';
         }
-    }
 
-    if ($ajax) {
-        sendJson(buildCartSummary($menu, $message));
+        if ($action === 'add' || $action === 'plus') {
+            if (empty($item['available'])) {
+                $message = 'This item is currently unavailable.';
+            } else {
+                $quantity = $_SESSION['cart'][$itemKey] ?? 0;
+                if ($quantity < 20) {
+                    $_SESSION['cart'][$itemKey] = $quantity + 1;
+                }
+                $message = 'Quantity updated.';
+            }
+        }
+
+        if ($action === 'minus') {
+            $quantity = $_SESSION['cart'][$itemKey] ?? 0;
+            if ($quantity > 1) {
+                $_SESSION['cart'][$itemKey] = $quantity - 1;
+                $message = 'Quantity updated.';
+            } else {
+                unset($_SESSION['cart'][$itemKey]);
+                $message = 'Item removed from cart.';
+            }
+        }
     }
 
     $_SESSION['flash'] = $message;
     header('Location: cart.php');
     exit;
-}
-
-if ($ajax) {
-    sendJson(buildCartSummary($menu));
 }
 
 $cartItems = [];
@@ -157,15 +224,154 @@ $tableNumber = $_SESSION['table_number'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart — Cozy Corner Café</title>
+    <title>Cart - Cozy Corner Café</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .cart-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 32px;
+            align-items: start;
+        }
+        
+        .cart-items {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .cart-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+        
+        .cart-item-details h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+        }
+        
+        .cart-item-details .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .cart-item-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quantity-controls button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .quantity-controls span {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .cart-summary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .cart-summary h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.2rem;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            padding-top: 16px;
+        }
+        
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+        
+        .cart-actions {
+            margin-top: 24px;
+            display: grid;
+            gap: 12px;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-cart h3 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .cart-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .cart-summary {
+                position: static;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="page-shell">
         <section class="section-title">
             <div>
                 <h2>Your Cart</h2>
-                <p style="margin:8px 0 0; color:#6c5b4d;">Review your order, adjust quantities, and proceed to checkout.</p>
+                <p>Review your order and proceed to checkout.</p>
             </div>
             <div>
                 <a class="button-secondary" href="index.php">Continue Shopping</a>
@@ -177,60 +383,57 @@ $tableNumber = $_SESSION['table_number'] ?? '';
         <?php endif; ?>
 
         <?php if (empty($cartItems)): ?>
-            <div class="section-empty">
-                <p><strong>Your cart is empty.</strong> Add items from the menu to start your order.</p>
+            <div class="empty-cart">
+                <h3>Your cart is empty</h3>
+                <p>Browse the menu to add delicious items to your order.</p>
+                <a class="button" href="index.php" style="margin-top: 16px;">Browse Menu</a>
             </div>
         <?php else: ?>
-            <div class="section-title" style="margin-top: 24px;">
-                <div>
-                    <h2>Order Summary</h2>
-                    <p style="margin:8px 0 0; color:#6c5b4d;"><?php echo count($cartItems); ?> item<?php echo count($cartItems) === 1 ? '' : 's'; ?> in your cart.</p>
-                </div>
-            </div>
-
-            <div class="menu-grid">
-                <?php foreach ($cartItems as $cartItem): ?>
-                    <?php $item = $cartItem['item']; ?>
-                    <article class="menu-card">
-                        <img src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>" loading="lazy" decoding="async">
-                        <div class="menu-card-body">
-                            <div>
-                                <h3 class="menu-card-title"><?php echo esc($item['name']); ?></h3>
-                                <p class="menu-card-description"><?php echo esc($item['description']); ?></p>
+            <div class="cart-container">
+                <div class="cart-items">
+                    <?php foreach ($cartItems as $cartItem): ?>
+                        <?php $item = $cartItem['item']; ?>
+                        <div class="cart-item">
+                            <img class="cart-item-image" src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>">
+                            <div class="cart-item-details">
+                                <h3><?php echo esc($item['name']); ?></h3>
+                                <div class="meta"><?php echo esc($item['description']); ?></div>
+                                <div class="meta" style="margin-top: 8px;">Unit price: <?php echo number_format($item['price'], 2); ?> Birr</div>
                             </div>
-                            <div class="menu-card-meta">
-                                <span>Qty: <?php echo esc($cartItem['quantity']); ?></span>
-                                <span class="menu-card-price"><?php echo number_format($cartItem['subtotal'], 2); ?> Birr</span>
-                            </div>
-                            <div class="menu-card-actions">
-                                <a class="button-secondary" href="cart.php?action=minus&id=<?php echo esc($item['id']); ?>">−</a>
-                                <a class="button-secondary" href="cart.php?action=plus&id=<?php echo esc($item['id']); ?>">+</a>
-                                <a class="button-secondary" href="cart.php?action=remove&id=<?php echo esc($item['id']); ?>">Remove</a>
+                            <div class="cart-item-controls">
+                                <div class="quantity-controls">
+                                    <a href="cart.php?action=minus&id=<?php echo esc($item['id']); ?>" class="button-secondary">-</a>
+                                    <span><?php echo esc($cartItem['quantity']); ?></span>
+                                    <a href="cart.php?action=plus&id=<?php echo esc($item['id']); ?>" class="button-secondary">+</a>
+                                </div>
+                                <a href="cart.php?action=remove&id=<?php echo esc($item['id']); ?>" class="button-secondary">Remove</a>
                             </div>
                         </div>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-
-            <div style="margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center;">
-                <div style="min-width: 220px;">
-                    <p style="margin:0; font-weight:700; color:#3c2f25;">Table</p>
-                    <p style="margin:6px 0 0; color:#5a4636;">
-                        <?php echo $tableNumber ? esc($tableNumber) : 'Select your table at checkout.'; ?>
-                    </p>
+                    <?php endforeach; ?>
                 </div>
-                <div style="text-align:right; min-width:220px;">
-                    <p style="margin:0; font-weight:700; color:#3c2f25;">Total</p>
-                    <p style="margin:6px 0 0; font-size:1.4rem; font-weight:700; color:#7f5f3c;"><?php echo number_format($total, 2); ?> Birr</p>
-                </div>
-            </div>
 
-            <div style="margin-top: 26px; display:flex; gap:12px; flex-wrap:wrap;">
-                <a class="button" href="checkout.php">Proceed to Checkout</a>
-                <a class="button-secondary" href="index.php">Continue Shopping</a>
+                <aside class="cart-summary">
+                    <h3>Order Summary</h3>
+                    <?php foreach ($cartItems as $cartItem): ?>
+                        <div class="summary-item">
+                            <div>
+                                <strong><?php echo esc($cartItem['item']['name']); ?></strong>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">Qty <?php echo esc($cartItem['quantity']); ?></div>
+                            </div>
+                            <div><?php echo number_format($cartItem['subtotal'], 2); ?> Birr</div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <strong><?php echo number_format($total, 2); ?> Birr</strong>
+                    </div>
+                    <div class="cart-actions">
+                        <a class="button" href="checkout.php">Proceed to Checkout</a>
+                        <a class="button-secondary" href="cart.php?action=clear&id=0">Clear Cart</a>
+                    </div>
+                </aside>
             </div>
         <?php endif; ?>
     </main>
-    <script src="app.js"></script>
 </body>
 </html>

@@ -32,10 +32,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) {
-            alert('Your cart is empty!');
+            showMessage('Your cart is empty! Please add some items before checkout.', 'error');
             return;
         }
         document.getElementById('cart-data').value = JSON.stringify(cart);
         // The form will submit to order.php
     });
+
+    function showMessage(message, type = 'info') {
+        // Remove any existing message
+        const existingMessage = document.querySelector('.cart-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        // Create new message element
+        const messageEl = document.createElement('div');
+        messageEl.className = `cart-message ${type}`;
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#fee2e2' : '#d1ecf1'};
+            color: ${type === 'error' ? '#721c24' : '#0c5460'};
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 300px;
+            font-weight: 500;
+        `;
+        messageEl.textContent = message;
+
+        document.body.appendChild(messageEl);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.remove();
+            }
+        }, 3000);
+    }
 });

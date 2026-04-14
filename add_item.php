@@ -148,41 +148,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .add-item-form {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: var(--shadow-soft);
-            max-width: 800px;
+            background: #ffffff;
+            border: 1px solid rgba(209, 213, 219, 0.8);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 22px 45px rgba(15, 23, 42, 0.08);
+            max-width: 840px;
             margin: 0 auto;
         }
         
         .form-section {
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            padding: 22px;
+            border: 1px solid rgba(229, 231, 235, 0.9);
+            border-radius: 22px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            background: #f8fafc;
         }
         
         .form-section:last-child {
-            border-bottom: none;
             margin-bottom: 0;
         }
         
         .form-section h3 {
-            margin: 0 0 16px 0;
+            margin: 0 0 18px 0;
             color: var(--text-primary);
             font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
+            font-weight: 700;
+            text-align: left;
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 18px;
             margin-bottom: 20px;
             align-items: start;
         }
@@ -199,46 +200,141 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gap: 8px;
         }
         
+        .form-group label {
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 600;
+        }
+        
         .form-group.full-width {
             grid-column: 1 / -1;
         }
         
         .checkbox-group {
             display: flex;
-            gap: 24px;
+            gap: 14px;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
             margin-top: 8px;
         }
         
         .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border-radius: 14px;
             transition: var(--transition);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            background: #fff;
         }
         
         .checkbox-label:hover {
-            background: var(--bg);
+            background: #f8fafc;
         }
         
         .checkbox-label input {
             margin: 0;
+            accent-color: var(--primary);
         }
         
         .image-preview {
             margin-top: 12px;
             text-align: center;
+            min-height: 160px;
+            display: grid;
+            place-items: center;
+            border: 1px dashed rgba(209, 213, 219, 0.9);
+            border-radius: 18px;
+            background: #f8fafc;
+            color: var(--text-secondary);
         }
         
         .image-preview img {
-            max-width: 200px;
+            max-width: 220px;
+            max-height: 180px;
+            width: auto;
             height: auto;
-            border-radius: 8px;
+            border-radius: 16px;
             box-shadow: var(--shadow-medium);
+            display: none;
+        }
+        
+        .image-preview.has-image {
+            border-color: var(--primary);
+            background: #fff;
+        }
+        
+        .image-preview.has-image .preview-placeholder {
+            display: none;
+        }
+        
+        .preview-placeholder {
+            font-size: 0.98rem;
+            color: #475569;
+            padding: 14px;
+        }
+        
+        .add-item-form input,
+        .add-item-form select,
+        .add-item-form textarea,
+        .add-item-form .file-input {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .add-item-form input,
+        .add-item-form select,
+        .add-item-form textarea {
+            border-radius: 16px;
+            padding: 14px 16px;
+            border: 1px solid rgba(209, 213, 219, 0.95);
+            background: #ffffff;
+            color: var(--text-primary);
+        }
+        .add-item-form input:focus,
+        .add-item-form select:focus,
+        .add-item-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+        }
+        .add-item-form .file-input {
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px dashed rgba(209, 213, 219, 0.95);
+            background: #f9fafb;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            font-weight: 600;
+        }
+        .add-item-form .file-input span:last-child {
+            color: var(--primary);
+        }
+        .add-item-form .file-input:hover {
+            background: #eef2ff;
+            border-color: rgba(59, 130, 246, 0.45);
+        }
+        
+        .add-item-form button {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        
+        .add-item-form button:hover {
+            transform: translateY(-1px);
+            background: var(--primary-hover);
         }
     </style>
 </head>
@@ -305,7 +401,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="form-group">
                             <label for="image_file"><strong>Upload Image</strong></label>
-                            <input id="image_file" type="file" name="image_file" accept="image/*" required>
+                            <label class="file-input" for="image_file">
+                                <span id="file-input-label">Choose an image</span>
+                                <span>Browse</span>
+                            </label>
+                            <input id="image_file" type="file" name="image_file" accept="image/*" required hidden>
                         </div>
                     </div>
                 </div>
@@ -319,7 +419,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="image-preview" id="image-preview">
-                    <img id="preview-img" src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=900&q=80" alt="Image Preview">
+                    <div class="preview-placeholder">Pick an image to preview it here.</div>
+                    <img id="preview-img" alt="Image Preview">
                 </div>
 
                 <div class="form-section">
@@ -361,20 +462,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }, 5000);
 
         // Image preview functionality
-        document.getElementById('image_file').addEventListener('change', function(event) {
+        const imageInput = document.getElementById('image_file');
+        const preview = document.getElementById('image-preview');
+        const img = document.getElementById('preview-img');
+
+        imageInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
-            const preview = document.getElementById('image-preview');
-            const img = document.getElementById('preview-img');
-            
-            if (file) {
+            const fileLabel = document.getElementById('file-input-label');
+        if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     img.src = e.target.result;
-                    preview.style.display = 'block';
+                    img.style.display = 'block';
+                    preview.classList.add('has-image');
+                    fileLabel.textContent = file.name;
                 };
                 reader.readAsDataURL(file);
             } else {
-                preview.style.display = 'none';
+                img.src = '';
+                img.style.display = 'none';
+                preview.classList.remove('has-image');
+                fileLabel.textContent = 'Choose an image';
             }
         });
 

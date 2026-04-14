@@ -12,21 +12,21 @@
     {
         "id": 2,
         "name": "pizza",
-        "description": "jfkh",
-        "price": 400,
+        "description": "pizzaria",
+        "price": 410.03,
         "image": "uploads/side-view-pizza-with-chopped-pepper-board-cookware_1775431956.jpg",
-        "category": "Lunch",
+        "category": "Breakfast",
         "available": true,
-        "popular": false
+        "popular": true
     },
     {
         "id": 3,
-        "name": "pizz",
+        "name": "pizza",
         "description": "pizzaria",
-        "price": 400,
+        "price": 402,
         "image": "uploads/side-view-pizza-with-chopped-pepper-board-cookware_1775433521.jpg",
-        "category": "Lunch",
+        "category": "Dinner",
         "available": true,
-        "popular": false
+        "popular": true
     }
 ]

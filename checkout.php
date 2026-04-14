@@ -28,6 +28,15 @@ function findMenuItem($menu, $id) {
     return null;
 }
 
+function findMenuItemByName($menu, $name) {
+    foreach ($menu as $item) {
+        if (isset($item['name']) && strcasecmp($item['name'], $name) === 0) {
+            return $item;
+        }
+    }
+    return null;
+}
+
 $menu = loadJson('menu.json');
 $cart = $_SESSION['cart'] ?? [];
 $items = [];
@@ -141,6 +150,135 @@ $estimatedMinutes = rand(14, 24);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout — Cozy Corner Café</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 32px;
+            align-items: start;
+        }
+        
+        .checkout-form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .checkout-form h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.2rem;
+        }
+        
+        .checkout-form .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .checkout-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .checkout-form input,
+        .checkout-form select,
+        .checkout-form textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .checkout-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .checkout-form .form-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .order-summary-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .order-summary-panel h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.2rem;
+        }
+        
+        .order-item-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .order-item-summary:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+        
+        .order-item-details {
+            flex: 1;
+        }
+        
+        .order-item-details h4 {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .order-item-details .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .order-item-price {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .order-total-summary {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-summary-panel {
+                position: static;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="page-shell">
@@ -192,53 +330,71 @@ $estimatedMinutes = rand(14, 24);
                 </div>
             <?php endif; ?>
 
-            <article class="form-card">
-                <form method="post">
-                    <label for="customer_name">Customer Name</label>
-                    <input id="customer_name" type="text" name="customer_name" value="<?php echo esc($customerName); ?>" required>
-
-                    <label for="phone">Phone Number</label>
-                    <input id="phone" type="tel" name="phone" value="<?php echo esc($phone); ?>" required placeholder="e.g. +251 900 000000">
-
-                    <label for="table_number">Table Number</label>
-                    <select id="table_number" name="table_number" required>
-                        <option value="">Choose a table</option>
-                        <?php for ($i = 1; $i <= 20; $i++): ?>
-                            <option value="Table <?php echo $i; ?>" <?php echo $tableNumber === 'Table ' . $i ? 'selected' : ''; ?>>Table <?php echo $i; ?></option>
-                        <?php endfor; ?>
-                    </select>
-
-                    <label for="payment_method">Payment Method</label>
-                    <select id="payment_method" name="payment_method" required>
-                        <option value="cash" <?php echo $paymentMethod === 'cash' ? 'selected' : ''; ?>>Cash</option>
-                        <option value="online" <?php echo $paymentMethod === 'online' ? 'selected' : ''; ?>>Mock Online Payment</option>
-                    </select>
-
-                    <label for="notes">Order Notes (optional)</label>
-                    <textarea id="notes" name="notes" rows="3"><?php echo esc($notes); ?></textarea>
-
-                    <section style="margin-top: 20px;">
-                        <h3 style="margin:0 0 10px; color:#3d2c23;">Order Summary</h3>
-                        <?php foreach ($items as $item): ?>
-                            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #e9ded3;">
-                                <span><?php echo esc($item['name']); ?> x<?php echo esc($item['quantity']); ?></span>
-                                <strong><?php echo number_format($item['subtotal'], 2); ?> Birr</strong>
-                            </div>
-                        <?php endforeach; ?>
-                        <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:1.05rem; font-weight:700;">
-                            <span>Total</span>
-                            <span><?php echo number_format($total, 2); ?> Birr</span>
+            <div class="checkout-container">
+                <div class="checkout-form">
+                    <h3>Customer Information</h3>
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="customer_name">Customer Name</label>
+                            <input id="customer_name" type="text" name="customer_name" value="<?php echo esc($customerName); ?>" required>
                         </div>
-                    </section>
 
-                    <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
-                        <button type="submit" class="button">Place Order</button>
-                        <a class="button-secondary" href="cart.php">Cancel</a>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input id="phone" type="tel" name="phone" value="<?php echo esc($phone); ?>" required placeholder="e.g. +251 900 000000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="table_number">Table Number</label>
+                            <select id="table_number" name="table_number" required>
+                                <option value="">Choose a table</option>
+                                <?php for ($i = 1; $i <= 20; $i++): ?>
+                                    <option value="Table <?php echo $i; ?>" <?php echo $tableNumber === 'Table ' . $i ? 'selected' : ''; ?>>Table <?php echo $i; ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method</label>
+                            <select id="payment_method" name="payment_method" required>
+                                <option value="cash" <?php echo $paymentMethod === 'cash' ? 'selected' : ''; ?>>Cash</option>
+                                <option value="online" <?php echo $paymentMethod === 'online' ? 'selected' : ''; ?>>Mock Online Payment</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Order Notes (optional)</label>
+                            <textarea id="notes" name="notes" rows="3"><?php echo esc($notes); ?></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="button">Place Order</button>
+                            <a class="button-secondary" href="cart.php">Back to Cart</a>
+                        </div>
+
+                        <input type="hidden" name="token" value="<?php echo esc($_SESSION['checkout_token']); ?>">
+                    </form>
+                </div>
+
+                <aside class="order-summary-panel">
+                    <h3>Order Overview</h3>
+                    <?php foreach ($items as $item): ?>
+                        <?php $menuItem = findMenuItemByName($menu, $item['name']); ?>
+                        <div class="order-item-summary">
+                            <img class="order-item-image" src="<?php echo esc($menuItem['image'] ?? ''); ?>" alt="<?php echo esc($item['name']); ?>">
+                            <div class="order-item-details">
+                                <h4><?php echo esc($item['name']); ?></h4>
+                                <div class="meta">Qty <?php echo esc($item['quantity']); ?> × <?php echo number_format($item['price'], 2); ?> Birr</div>
+                            </div>
+                            <div class="order-item-price"><?php echo number_format($item['subtotal'], 2); ?> Birr</div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="order-total-summary">
+                        <span>Total</span>
+                        <strong><?php echo number_format($total, 2); ?> Birr</strong>
                     </div>
-
-                    <input type="hidden" name="token" value="<?php echo esc($_SESSION['checkout_token']); ?>">
-                </form>
-            </article>
+                </aside>
+            </div>
         <?php endif; ?>
     </main>
     <script src="app.js"></script>

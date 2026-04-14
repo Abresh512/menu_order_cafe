@@ -108,6 +108,7 @@ $totalOrdersToday = 0;
 $pendingCount = 0;
 $preparingCount = 0;
 $readyCount = 0;
+$completedCount = 0;
 
 foreach ($orders as $order) {
     if (date('Y-m-d', intval($order['timestamp'])) === $today) {
@@ -116,6 +117,7 @@ foreach ($orders as $order) {
     if ($order['status'] === 'Pending') $pendingCount++;
     elseif ($order['status'] === 'Preparing') $preparingCount++;
     elseif ($order['status'] === 'Ready') $readyCount++;
+    elseif ($order['status'] === 'Completed') $completedCount++;
 }
 
 function timeAgo($timestamp) {
@@ -124,6 +126,23 @@ function timeAgo($timestamp) {
     if ($seconds < 3600) return floor($seconds / 60) . ' min ago';
     if ($seconds < 86400) return floor($seconds / 3600) . ' hrs ago';
     return date('M j, g:i A', $timestamp);
+}
+
+function findItemImage($orderItems, $menu) {
+    foreach ($orderItems as $item) {
+        foreach ($menu as $menuItem) {
+            if (isset($menuItem['name'], $menuItem['image']) &&
+                strcasecmp($menuItem['name'], $item['name']) === 0 &&
+                trim($menuItem['image']) !== '') {
+                return $menuItem['image'];
+            }
+        }
+    }
+    return '';
+}
+
+function isNewOrder($timestamp) {
+    return (time() - intval($timestamp)) <= 3600;
 }
 ?>
 <!DOCTYPE html>
@@ -169,38 +188,61 @@ function timeAgo($timestamp) {
             flex-wrap: wrap;
         }
         
-        .stats-bar {
+        .status-dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
         
-        .stat-card {
+        .status-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
+            box-shadow: var(--shadow-soft);
         }
         
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
+        .status-card.new { border-left: 4px solid #3b82f6; }
+        .status-card.cooking { border-left: 4px solid #f59e0b; }
+        .status-card.ready { border-left: 4px solid #10b981; }
+        .status-card.completed { border-left: 4px solid #6b7280; }
+        
+        .status-card strong {
+            display: block;
+            font-size: 1.75rem;
             margin-bottom: 4px;
+            color: var(--text-primary);
         }
         
-        .stat-label {
+        .status-card span {
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
         
+        .order-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            font-size: 0.82rem;
+            min-width: 110px;
+            text-transform: uppercase;
+        }
+        .order-status.status-pending { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+        .order-status.status-preparing { background: rgba(245, 158, 11, 0.15); color: #92400e; }
+        .order-status.status-ready { background: rgba(16, 185, 129, 0.12); color: #047857; }
+        .order-status.status-completed { background: rgba(107, 114, 128, 0.12); color: #334155; }
+        
         .filters-bar {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 18px;
             margin-bottom: 24px;
             display: flex;
             gap: 16px;
@@ -211,33 +253,35 @@ function timeAgo($timestamp) {
         .filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
         .filter-group label {
             font-weight: 600;
             color: var(--text-primary);
+            min-width: 80px;
         }
         
         .filter-group input,
         .filter-group select {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 12px;
             background: var(--bg);
             color: var(--text-primary);
+            min-width: 190px;
         }
         
         .orders-container {
             display: grid;
-            gap: 16px;
+            gap: 18px;
         }
         
         .order-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 24px;
+            padding: 16px;
             transition: var(--transition);
         }
         
@@ -245,66 +289,102 @@ function timeAgo($timestamp) {
             box-shadow: var(--shadow-medium);
         }
         
-        .order-header {
+        .order-card-top {
             display: flex;
-            justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
         }
         
-        .order-info h3 {
-            margin: 0 0 8px;
-            color: var(--text-primary);
+        .order-card-top h3 {
+            margin: 0;
             font-size: 1.2rem;
+            letter-spacing: -0.02em;
         }
         
-        .order-meta {
+        .order-card-top .order-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.94rem;
+            margin-top: 8px;
         }
         
-        .order-status {
+        .order-card-top .order-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .order-badge {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1D4ED8;
+            border-radius: 999px;
             padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
         }
         
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--secondary-accent); }
-        .status-preparing { background: rgba(220, 38, 38, 0.1); color: var(--primary); }
-        .status-ready { background: rgba(22, 163, 74, 0.1); color: var(--success); }
-        .status-completed { background: rgba(107, 114, 128, 0.1); color: var(--text-secondary); }
-        
-        .order-items {
-            margin-bottom: 16px;
+        .order-summary {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 18px;
         }
         
-        .order-item {
+        .item-thumb {
+            width: 84px;
+            height: 84px;
+            border-radius: 18px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: var(--bg);
+        }
+        
+        .item-thumb.placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .item-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .item-meta,
+        .item-note {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .order-total-line {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
+            align-items: center;
             font-weight: 700;
-            padding-top: 12px;
+            color: var(--text-primary);
+            margin-bottom: 18px;
         }
         
-        .order-customer {
-            margin-bottom: 16px;
-            padding: 12px;
-            background: var(--bg);
-            border-radius: 6px;
+        .order-total-line span {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-weight: 500;
         }
         
         .order-controls {
@@ -314,19 +394,33 @@ function timeAgo($timestamp) {
             flex-wrap: wrap;
         }
         
+        .order-controls .button {
+            min-width: 110px;
+        }
+        
         .status-update {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .status-update select {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 12px;
             background: var(--bg);
             color: var(--text-primary);
-            min-width: 120px;
+            min-width: 150px;
+        }
+        
+        .status-update button {
+            padding: 10px 16px;
+            border-radius: 12px;
+        }
+        
+        .order-status {
+            white-space: nowrap;
         }
         
         .empty-state {
@@ -341,23 +435,79 @@ function timeAgo($timestamp) {
         }
         
         .clear-orders-section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px;
+            background: #F3F4F6;
+            border: 1px solid #D1D5DB;
+            border-radius: 20px;
+            padding: 24px 26px;
+            margin-top: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        
+        .clear-orders-section.blurry {
+            filter: none;
+            opacity: 1;
         }
         
         .clear-orders-section h3 {
-            margin: 0 0 8px;
-            color: var(--text-primary);
-            font-size: 1.2rem;
+            margin: 0 0 12px;
+            color: #374151;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        
+        .clear-orders-section p {
+            margin: 0 auto 18px;
+            color: #4B5563;
+            max-width: 600px;
+            line-height: 1.65;
+        }
+        
+        .clear-orders-section .button {
+            background: #6B7280;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 14px;
+            min-width: 170px;
+            border: none;
+        }
+        
+        .clear-orders-section .button:hover {
+            background: #4B5563;
+        }
+        
+        .clear-orders-section .button:active {
+            transform: translateY(1px);
+        }
+        
+        .clear-orders-section .button:focus {
+            outline: 3px solid rgba(107,114,128,0.24);
+        }
+        
+        .clear-orders-section .button + .button { margin-left: 0; }
+        
+        .clear-orders-section .button {
+            width: auto;
+        }
+        
+        .clear-orders-section .button {
+            background: #b91c1c;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 14px;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        
+        .clear-orders-section .button:hover {
+            background: #991b1b;
+            transform: translateY(-1px);
         }
         
         .message-bar {
             position: relative;
             padding: 12px 16px 12px 40px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 18px;
             border: 1px solid var(--border);
             background: var(--bg);
@@ -403,11 +553,16 @@ function timeAgo($timestamp) {
             
             .filter-group {
                 justify-content: space-between;
+                width: 100%;
             }
             
-            .order-header {
+            .order-card-top {
                 flex-direction: column;
-                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .order-summary {
+                grid-template-columns: 1fr;
             }
             
             .order-controls {
@@ -421,10 +576,11 @@ function timeAgo($timestamp) {
     <header class="admin-header">
         <div class="admin-header-content">
             <div class="admin-title">
-                <h1>Order Management</h1>
-                <p>Manage orders and update status</p>
+                <h1>Orders</h1>
+                <p>Manage current orders and update status</p>
             </div>
             <div class="admin-actions">
+                <a href="admin_items.php" class="button-secondary">Manage Menu</a>
                 <a href="add_item.php" class="button-secondary">Add Item</a>
                 <a href="index.php" class="button-secondary">View Menu</a>
                 <a href="login.php?logout=1" class="button">Logout</a>
@@ -440,35 +596,24 @@ function timeAgo($timestamp) {
             </div>
         <?php endif; ?>
 
-        <!-- Quick Stats -->
-        <div class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-number"><?php echo esc($totalOrdersToday); ?></div>
-                <div class="stat-label">Orders Today</div>
+        <!-- Status Dashboard -->
+        <div class="status-dashboard">
+            <div class="status-card new">
+                <strong><?php echo esc($pendingCount); ?></strong>
+                <span>New Orders</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo esc($pendingCount); ?></div>
-                <div class="stat-label">Pending</div>
+            <div class="status-card cooking">
+                <strong><?php echo esc($preparingCount); ?></strong>
+                <span>Cooking</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo esc($preparingCount); ?></div>
-                <div class="stat-label">Preparing</div>
+            <div class="status-card ready">
+                <strong><?php echo esc($readyCount); ?></strong>
+                <span>Ready</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo esc($readyCount); ?></div>
-                <div class="stat-label">Ready</div>
+            <div class="status-card completed">
+                <strong><?php echo esc($completedCount); ?></strong>
+                <span>Completed</span>
             </div>
-        </div>
-
-        <!-- Delete All Orders Section -->
-        <div class="clear-orders-section" style="border-left: 4px solid var(--error);">
-            <h3 style="color: var(--error);">⚠️ Delete All Orders</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;"><strong>Warning:</strong> This will permanently delete ALL orders from the system. This action cannot be undone.</p>
-            <form method="post" style="display: flex; gap: 8px; align-items: center;">
-                <input type="hidden" name="action" value="clear_orders">
-                <input type="hidden" name="clear_period" value="all">
-                <button type="submit" class="button" style="background: var(--error);" onclick="return confirm('⚠️ Are you sure you want to DELETE ALL orders?\\n\\nThis action cannot be undone!')">Delete All Orders</button>
-            </form>
         </div>
 
         <!-- Filters -->
@@ -501,40 +646,44 @@ function timeAgo($timestamp) {
             <?php else: ?>
                 <?php foreach ($displayOrders as $order): ?>
                     <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-info">
-                                <h3>Order #<?php echo esc($order['id']); ?></h3>
+                        <div class="order-card-top">
+                            <div>
+                                <h3><?php echo esc($order['table_number'] ?: 'Order #' . $order['id']); ?></h3>
                                 <div class="order-meta">
                                     <span>📅 <?php echo esc($order['date'] ?? date('Y-m-d', intval($order['timestamp']))); ?></span>
-                                    <span>🪑 Table <?php echo esc($order['table_number']); ?></span>
                                     <span>⏰ <?php echo esc(timeAgo($order['timestamp'])); ?></span>
-                                    <span>💳 <?php echo esc($order['payment_method']); ?></span>
+                                    <span>💳 <?php echo esc(ucfirst($order['payment_method'])); ?></span>
                                 </div>
                             </div>
-                            <div class="order-status status-<?php echo strtolower(esc($order['status'])); ?>">
-                                <strong><?php echo esc($order['status']); ?></strong>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <?php if (isNewOrder($order['timestamp'])): ?>
+                                    <span class="order-badge">NEW</span>
+                                <?php endif; ?>
+                                <span class="order-status status-<?php echo strtolower(esc($order['status'])); ?>">
+                                    <strong><?php echo esc($order['status']); ?></strong>
+                                </span>
                             </div>
                         </div>
 
-                        <div class="order-items">
-                            <?php foreach ($order['items'] as $item): ?>
-                                <div class="order-item">
-                                    <span><?php echo esc($item['name']); ?> × <strong><?php echo esc($item['quantity']); ?></strong></span>
-                                    <span><?php echo number_format($item['subtotal'], 2); ?> Birr</span>
-                                </div>
-                            <?php endforeach; ?>
-                            <div class="order-item">
-                                <span><strong>Total</strong></span>
-                                <span><?php echo number_format($order['total'], 2); ?> Birr</span>
-                            </div>
-                        </div>
-
-                        <div class="order-customer">
-                            <strong>Customer:</strong> <?php echo esc($order['customer_name']); ?> • 
-                            <strong>Phone:</strong> <?php echo esc($order['phone']); ?>
-                            <?php if (!empty($order['notes'])): ?>
-                                <br><strong>Notes:</strong> <?php echo esc($order['notes']); ?>
+                        <?php $thumbnail = findItemImage($order['items'], $menu); ?>
+                        <div class="order-summary">
+                            <?php if ($thumbnail): ?>
+                                <img class="item-thumb" src="<?php echo esc($thumbnail); ?>" alt="<?php echo esc($order['items'][0]['name'] ?? 'Item'); ?>">
+                            <?php else: ?>
+                                <div class="item-thumb placeholder">No Image</div>
                             <?php endif; ?>
+                            <div class="item-details">
+                                <div class="item-title"><?php echo esc($order['items'][0]['name'] ?? 'Item'); ?></div>
+                                <div class="item-meta"><?php echo esc($order['items'][0]['quantity'] ?? 1); ?> × <?php echo number_format($order['items'][0]['price'] ?? 0, 2); ?> Birr</div>
+                                <?php if (count($order['items']) > 1): ?>
+                                    <div class="item-note">+ <?php echo count($order['items']) - 1; ?> more item(s)</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="order-total-line">
+                            <span>Total</span>
+                            <strong><?php echo number_format($order['total'], 2); ?> Birr</strong>
                         </div>
 
                         <div class="order-controls">
@@ -551,15 +700,21 @@ function timeAgo($timestamp) {
                                 <button type="submit" class="button">Update</button>
                             </form>
                             
-                            <form method="post" onsubmit="return confirm('Delete this order?')">
-                                <input type="hidden" name="order_id" value="<?php echo esc($order['id']); ?>">
-                                <input type="hidden" name="action" value="delete">
-                                <button type="submit" class="button-secondary">Delete</button>
-                            </form>
+                            <button type="button" class="button-secondary" onclick="showDeleteOrderModal('<?php echo esc($order['id']); ?>')">Remove</button>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+        </div>
+
+        <div class="clear-orders-section blurry">
+            <h3>Delete All Orders</h3>
+            <p style="margin-bottom: 16px; color: #4B5563;">This will permanently delete all orders from the system.</p>
+            <form method="post" style="display: flex; justify-content: center; gap: 8px;">
+                <input type="hidden" name="action" value="clear_orders">
+                <input type="hidden" name="clear_period" value="all">
+                <button type="button" class="button" onclick="showDeleteAllModal()">Delete All Orders</button>
+            </form>
         </div>
     </main>
 
@@ -605,6 +760,118 @@ function timeAgo($timestamp) {
         });
         
         document.getElementById('filter_status').addEventListener('change', applyFilters);
+    </script>
+
+    <!-- Delete Order Modal -->
+    <div id="deleteOrderModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fff; margin: 15% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: #dc3545;">Confirm Delete</h3>
+            <p id="deleteOrderMessage">Are you sure you want to delete this order?</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button onclick="closeDeleteOrderModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button id="confirmDeleteOrderBtn" onclick="confirmDeleteOrder()" style="padding: 8px 16px; border: none; background: #dc3545; color: white; border-radius: 4px; cursor: pointer;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete All Orders Modal -->
+    <div id="deleteAllModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fff; margin: 15% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: #dc3545;">⚠️ Confirm Delete All Orders</h3>
+            <p>Are you sure you want to DELETE ALL orders? This action cannot be undone!</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button onclick="closeDeleteAllModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button onclick="confirmDeleteAll()" style="padding: 8px 16px; border: none; background: #dc3545; color: white; border-radius: 4px; cursor: pointer;">Delete All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deleteOrderId = null;
+
+        function showDeleteOrderModal(orderId) {
+            deleteOrderId = orderId;
+            document.getElementById('deleteOrderMessage').textContent = `Are you sure you want to delete order #${orderId}?`;
+            document.getElementById('deleteOrderModal').style.display = 'block';
+        }
+
+        function closeDeleteOrderModal() {
+            document.getElementById('deleteOrderModal').style.display = 'none';
+            deleteOrderId = null;
+        }
+
+        function confirmDeleteOrder() {
+            if (deleteOrderId !== null) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'delete';
+                
+                const orderInput = document.createElement('input');
+                orderInput.type = 'hidden';
+                orderInput.name = 'order_id';
+                orderInput.value = deleteOrderId;
+                
+                form.appendChild(actionInput);
+                form.appendChild(orderInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function showDeleteAllModal() {
+            document.getElementById('deleteAllModal').style.display = 'block';
+        }
+
+        function closeDeleteAllModal() {
+            document.getElementById('deleteAllModal').style.display = 'none';
+        }
+
+        function confirmDeleteAll() {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.style.display = 'none';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'clear_orders';
+            
+            const periodInput = document.createElement('input');
+            periodInput.type = 'hidden';
+            periodInput.name = 'clear_period';
+            periodInput.value = 'all';
+            
+            form.appendChild(actionInput);
+            form.appendChild(periodInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const deleteOrderModal = document.getElementById('deleteOrderModal');
+            const deleteAllModal = document.getElementById('deleteAllModal');
+            
+            if (event.target === deleteOrderModal) {
+                closeDeleteOrderModal();
+            }
+            if (event.target === deleteAllModal) {
+                closeDeleteAllModal();
+            }
+        }
+
+        // Close modals with Escape key
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDeleteOrderModal();
+                closeDeleteAllModal();
+            }
+        });
     </script>
 </body>
 </html>

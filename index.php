@@ -41,13 +41,22 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
 </head>
 <body>
     <header class="site-header fade-in">
-        <div class="site-brand">
-            <div>
-                <h1>Cozy Corner Café</h1>
-                <p>Fast, friendly, and fresh café ordering for every table.</p>
+        <div class="site-header-top">
+            <div class="site-branding">
+                <div class="brand-logo">
+                    <img src="images/friends-logo.jpg" alt="Cozy Corner Café logo">
+                </div>
+                <div>
+                    <h1>Cozy Corner Café</h1>
+                    <p>Fast, friendly, and fresh café ordering for every table.</p>
+                </div>
+            </div>
+
+            <div class="site-actions">
+                <a href="orders.php" class="button button-secondary">My Orders</a>
+                <a href="<?php echo esc($adminLink); ?>" class="button button-secondary"><?php echo esc($adminLabel); ?></a>
             </div>
         </div>
-
     </header>
 
     <main class="page-shell">
@@ -83,6 +92,9 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                                 <div>
                                     <h3 class="menu-card-title"><?php echo esc($item['name']); ?></h3>
                                     <p class="menu-card-description"><?php echo esc($item['description']); ?></p>
+                                </div>
+                                <div class="menu-card-image">
+                                    <img src="<?php echo esc($item['image']); ?>" alt="<?php echo esc($item['name']); ?>">
                                 </div>
                                 <div class="menu-card-meta">
                                     <span class="menu-card-price"><?php echo number_format($item['price'], 2); ?> Birr</span>
@@ -166,13 +178,6 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
     <div id="toast" class="toast" aria-live="polite"></div>
 
     <footer class="footer">© <?php echo date('Y'); ?> Cozy Corner Café. Designed for fast local ordering.</footer>
-
-    <div class="orders-bubble">
-        <a href="orders.php">My Orders</a>
-    </div>
-    <div class="login-bubble">
-        <a href="<?php echo esc($adminLink); ?>"><?php echo esc($adminLabel); ?></a>
-    </div>
 
     <button type="button" class="cart-bubble" aria-label="Open cart">🛒 <span class="cart-count"><?php echo (int)$cartCount; ?></span></button>
 
@@ -323,6 +328,10 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                 event.preventDefault();
                 const id = button.dataset.itemId;
                 fetchCart('add', id).then(data => {
+                    if (data.error) {
+                        showToast(data.error);
+                        return;
+                    }
                     renderCart(data);
                     openDrawer();
                     showToast(data.message || 'Added to cart');
@@ -365,6 +374,10 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                 const action = button.dataset.action;
                 const id = button.dataset.id;
                 fetchCart(action, id).then(data => {
+                    if (data.error) {
+                        showToast(data.error);
+                        return;
+                    }
                     renderCart(data);
                     showToast(data.message || 'Cart updated');
                 });
