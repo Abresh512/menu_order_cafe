@@ -150,36 +150,37 @@ function isNewOrder($timestamp) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management — Cozy Corner Café</title>
+    <title>Order Management — Friends Café</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-header {
             background: var(--surface);
             border-bottom: 2px solid var(--primary);
-            padding: 20px 0;
-            margin-bottom: 30px;
+            padding: 16px 0;
+            margin-bottom: 22px;
         }
         
         .admin-header-content {
-            max-width: 1200px;
+            max-width: 1080px;
             margin: 0 auto;
-            padding: 0 16px;
+            padding: 0 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 14px;
         }
         
         .admin-title h1 {
             margin: 0;
             color: var(--text-primary);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
         }
         
         .admin-title p {
             margin: 4px 0 0;
             color: var(--text-secondary);
+            font-size: 0.92rem;
         }
         
         .admin-actions {
@@ -190,16 +191,16 @@ function isNewOrder($timestamp) {
         
         .status-dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
         }
         
         .status-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 16px;
             text-align: center;
             box-shadow: var(--shadow-soft);
         }
@@ -211,7 +212,7 @@ function isNewOrder($timestamp) {
         
         .status-card strong {
             display: block;
-            font-size: 1.75rem;
+            font-size: 1.4rem;
             margin-bottom: 4px;
             color: var(--text-primary);
         }
@@ -242,10 +243,10 @@ function isNewOrder($timestamp) {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 24px;
+            padding: 14px;
+            margin-bottom: 20px;
             display: flex;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
         }

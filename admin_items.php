@@ -76,7 +76,7 @@ unset($_SESSION['message']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Menu — Cozy Corner Café</title>
+    <title>Manage Menu — Friends Café</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-header { background: var(--surface); border-bottom: 2px solid var(--primary); padding: 22px 0; margin-bottom: 28px; }

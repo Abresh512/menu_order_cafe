@@ -224,7 +224,7 @@ $tableNumber = $_SESSION['table_number'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart - Cozy Corner Café</title>
+    <title>Cart - Friends Café</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .cart-container {

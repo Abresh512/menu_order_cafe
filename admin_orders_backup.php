@@ -112,7 +112,7 @@ function timeAgo($timestamp) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Orders — Cozy Corner Café</title>
+    <title>Admin Orders — Friends Café</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .analytics-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:18px; margin-top:24px; }

@@ -17,6 +17,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--text-primary);
   background: var(--bg);
 }
@@ -53,11 +55,11 @@ textarea {
 }
 
 .page-shell {
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0 16px 40px;
+  padding: 0 14px 30px;
 }
-.site-header { background: var(--surface); color: var(--text-primary); position: relative; padding: 22px 18px 28px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); overflow: hidden; min-height: 120px; box-shadow: var(--shadow-soft); }
+.site-header { background: var(--surface); color: var(--text-primary); position: relative; padding: 18px 14px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); overflow: hidden; min-height: 100px; box-shadow: var(--shadow-soft); }
 .site-header::before { content: '';
   position: absolute;
   inset: 0;
@@ -71,56 +73,48 @@ textarea {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px;
-  max-width: 1200px;
+  gap: 16px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 .site-branding {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 .brand-logo {
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   border-radius: 18px;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .brand-logo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 .site-branding h1 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   letter-spacing: 0.08em;
 }
 .site-branding p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 .site-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
-}
-.site-header {
-  background: var(--surface);
-  color: var(--text-primary);
-  position: relative;
-  padding: 22px 18px 28px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  min-height: 120px;
-  box-shadow: var(--shadow-soft);
 }
 
 @media (min-width: 768px) {
@@ -130,28 +124,28 @@ textarea {
 }
 
 .hero {
-  margin-top: 20px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 24px;
+  gap: 18px;
   position: relative;
   z-index: 1;
 }
 .hero-copy {
-  max-width: 540px;
+  max-width: 520px;
 }
 .hero-copy h2 {
-  font-size: clamp(2rem, 3.5vw, 3.5rem);
-  margin: 0 0 14px;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  margin: 0 0 12px;
   line-height: 1.05;
   letter-spacing: -0.03em;
 }
 .hero-copy p {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: var(--text-secondary);
-  font-size: 1.05rem;
-  line-height: 1.75;
-  max-width: 560px;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  max-width: 520px;
 }
 .hero-overview {
   display: none;
@@ -169,14 +163,14 @@ textarea {
 .nav-row .search-field {
   flex: 1 1 320px;
 }
-.search-field input { width: 100%; padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); transition: var(--transition); }
+.search-field input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); transition: var(--transition); }
 .search-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(220,38,38,0.1); outline: none; }
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
-.filter-button { background: var(--bg); border: 1px solid var(--border); color: var(--text-primary); padding: 11px 16px; border-radius: 8px; cursor: pointer; transition: var(--transition); }
+.filter-button { background: var(--bg); border: 1px solid var(--border); color: var(--text-primary); padding: 9px 14px; border-radius: 8px; cursor: pointer; transition: var(--transition); font-size: 0.95rem; }
 .filter-button.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; box-shadow: var(--shadow-medium); }
 .filter-button:hover { transform: translateY(-1px); background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-soft); }
 
@@ -232,27 +226,27 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin: 40px 0 16px;
+  margin: 32px 0 12px;
 }
-.section-title h2 { margin: 0; font-size: 1.6rem; color: var(--text-primary); }
-.section-title small { color: var(--text-secondary); }
+.section-title h2 { margin: 0; font-size: 1.35rem; color: var(--text-primary); }
+.section-title small { color: var(--text-secondary); font-size: 0.95rem; }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
 }
 .menu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-soft); transition: var(--transition); }
-.menu-card:hover { transform: scale(1.02); border-color: var(--primary); box-shadow: var(--shadow-large); }
+.menu-card:hover { transform: scale(1.01); border-color: var(--primary); box-shadow: var(--shadow-medium); }
 .menu-card:focus-within { transform: scale(1.01); border-color: var(--primary); box-shadow: var(--shadow-medium); }
 .menu-card-body {
-  padding: 18px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
-.menu-card-title { margin: 0; font-size: 1.1rem; color: var(--text-primary); }
-.menu-card-description { margin: 0; color: var(--text-secondary); font-size: .95rem; line-height: 1.5; min-height: 3rem; }
+.menu-card-title { margin: 0; font-size: 1rem; color: var(--text-primary); }
+.menu-card-description { margin: 0; color: var(--text-secondary); font-size: .9rem; line-height: 1.4; min-height: 3rem; }
 .menu-card-meta {
   display: flex;
   align-items: center;
@@ -265,9 +259,9 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -277,11 +271,11 @@ textarea {
 .status-unavailable { background: rgba(220,38,38,.1); color: var(--error); }
 .menu-card-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-top: auto;
 }
-.button, .button-secondary { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 8px; border: none; cursor: pointer; transition: var(--transition); }
+.button, .button-secondary { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 7px; border: none; cursor: pointer; transition: var(--transition); font-size: 0.95rem; }
 .button { background: var(--primary); color: white; box-shadow: var(--shadow-soft); }
 .button:hover { transform: translateY(-1px); background: var(--primary-hover); box-shadow: var(--shadow-medium); }
 .button:active { transform: scale(0.98); }
@@ -294,14 +288,14 @@ textarea {
 }
 
 
-.cart-bubble { position: fixed; bottom: 18px; right: 18px; z-index: 50; background: var(--primary); border: 1px solid var(--primary); border-radius: 8px; padding: 10px 14px; box-shadow: var(--shadow-medium); display: inline-flex; align-items: center; gap: 10px; transition: var(--transition); border: none; cursor: pointer; color: white; }
+.cart-bubble { position: fixed; bottom: 14px; right: 14px; z-index: 50; background: var(--primary); border: 1px solid var(--primary); border-radius: 8px; padding: 8px 12px; box-shadow: var(--shadow-medium); display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); border: none; cursor: pointer; color: white; }
 .cart-bubble:hover { transform: translateY(-2px); box-shadow: var(--shadow-large); background: var(--primary-hover); }
 .cart-bubble.pulse {
   animation: cart-pulse 1.8s ease-out 1;
 }
-.cart-count { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 6px; background: white; color: var(--primary); font-size: .92rem; font-weight: 700; }
+.cart-count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; border-radius: 6px; background: white; color: var(--primary); font-size: .88rem; font-weight: 700; }
 
-.cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); max-width: 420px; background: var(--surface); box-shadow: var(--shadow-large); padding: 24px; transform: translateX(100%); transition: var(--transition-medium); z-index: 51; display: flex; flex-direction: column; }
+.cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 100vw); max-width: 360px; background: var(--surface); box-shadow: var(--shadow-large); padding: 18px; transform: translateX(100%); transition: var(--transition-medium); z-index: 51; display: flex; flex-direction: column; }
 .cart-drawer.open {
   transform: translateX(0);
 }
@@ -324,15 +318,15 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 .drawer-header h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
 }
-.drawer-subtitle { margin: 6px 0 0; color: var(--text-secondary); }
-.drawer-close { border: none; background: var(--bg); color: var(--text-primary); width: 34px; height: 34px; font-size: 1.3rem; border-radius: 6px; cursor: pointer; transition: var(--transition); }
+.drawer-subtitle { margin: 6px 0 0; color: var(--text-secondary); font-size: 0.93rem; }
+.drawer-close { border: none; background: var(--bg); color: var(--text-primary); width: 30px; height: 30px; font-size: 1.1rem; border-radius: 6px; cursor: pointer; transition: var(--transition); }
 .drawer-close:hover { background: var(--error); color: white; }
 .cart-content {
   flex: 1;
@@ -345,19 +339,19 @@ textarea {
   flex-direction: column;
   gap: 14px;
 }
-.cart-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cart-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 .cart-item-info strong {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.cart-item-info span { color: var(--text-secondary); font-size: .95rem; }
+.cart-item-info span { color: var(--text-secondary); font-size: .9rem; }
 .cart-item-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
-.cart-item-actions button { border: none; background: var(--surface); color: var(--text-primary); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 1rem; transition: var(--transition); }
+.cart-item-actions button { border: none; background: var(--surface); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 0.95rem; transition: var(--transition); }
 .cart-item-actions button:hover { background: var(--primary); color: white; }
 .cart-item-actions span {
   min-width: 24px;
@@ -371,7 +365,8 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 16px;
   font-weight: 700;
 }
 .checkout-button {
@@ -394,13 +389,13 @@ textarea {
 .menu-card-image {
   padding: 4px;
   text-align: center;
-  margin: 6px 0;
+  margin: 5px 0;
 }
 
 .menu-card-image img {
   width: 100%;
   height: auto;
-  max-height: 100px;
+  max-height: 90px;
   object-fit: cover;
   border-radius: 6px;
   box-shadow: var(--shadow-soft);
@@ -432,7 +427,7 @@ textarea {
 
 .section-empty { padding: 24px 18px; border-radius: 12px; background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
 
-.footer { margin: 48px 0 0; padding: 24px 0 14px; color: var(--text-secondary); text-align: center; font-size: .9rem; }
+.footer { margin: 36px 0 0; padding: 18px 0 10px; color: var(--text-secondary); text-align: center; font-size: .9rem; }
 
 .fade-in {
   animation: fadeInUp 0.9s ease forwards;
@@ -446,22 +441,22 @@ textarea {
   }
 }
 
-.form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--shadow-soft); }
-.form-card label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--text-primary); }
-.form-card input, .form-card textarea, .form-card select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; transition: var(--transition); background: var(--surface); color: var(--text-primary); }
+.form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-soft); }
+.form-card label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+.form-card input, .form-card textarea, .form-card select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: var(--transition); background: var(--surface); color: var(--text-primary); }
 .form-card input:focus, .form-card textarea:focus, .form-card select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
 .form-card textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 70px;
 }
 .form-card button {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   border-radius: 12px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   transition: transform 0.2s ease;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 .form-card button:hover {
   transform: translateY(-2px);
@@ -474,11 +469,11 @@ textarea {
 }
 @media (max-width: 720px) {
   .site-header {
-    padding: 14px 14px 18px;
-    min-height: 170px;
+    padding: 12px 12px 16px;
+    min-height: auto;
   }
   .form-card {
-    padding: 18px;
+    padding: 16px;
   }
   .form-card input,
   .form-card textarea,

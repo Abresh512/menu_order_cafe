@@ -36,7 +36,7 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cozy Corner Café</title>
+    <title>Friends Café</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -44,10 +44,10 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
         <div class="site-header-top">
             <div class="site-branding">
                 <div class="brand-logo">
-                    <img src="images/friends-logo.jpg" alt="Cozy Corner Café logo">
+                    <img src="images/friends-logo.jpg" alt="Friends Cafe Logo">
                 </div>
                 <div>
-                    <h1>Cozy Corner Café</h1>
+                    <h1>Friends</h1>
                     <p>Fast, friendly, and fresh café ordering for every table.</p>
                 </div>
             </div>
@@ -177,7 +177,7 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
     </aside>
     <div id="toast" class="toast" aria-live="polite"></div>
 
-    <footer class="footer">© <?php echo date('Y'); ?> Cozy Corner Café. Designed for fast local ordering.</footer>
+    <footer class="footer">© <?php echo date('Y'); ?> Friends Café. Designed for fast local ordering.</footer>
 
     <button type="button" class="cart-bubble" aria-label="Open cart">🛒 <span class="cart-count"><?php echo (int)$cartCount; ?></span></button>
 
