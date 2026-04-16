@@ -48,7 +48,7 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                 </div>
                 <div class="header-text">
                     <h1>Friends</h1>
-                    <p>Fast, friendly, and fresh café ordering for every table.</p>
+                    <p>Fast café ordering for every table.</p>
                 </div>
             </div>
 

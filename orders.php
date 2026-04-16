@@ -19,11 +19,25 @@ function saveJson($path, $data) {
     file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
 }
 
+function removeOldCancelledOrders(array $orders) {
+    $now = time();
+    return array_values(array_filter($orders, function ($order) use ($now) {
+        $status = strtolower(trim($order['status'] ?? ''));
+        $timestamp = intval($order['timestamp'] ?? 0);
+        return !($status === 'cancelled' && $timestamp > 0 && ($now - $timestamp) > 86400);
+    }));
+}
+
 function normalizePhone($phone) {
     return preg_replace('/[^0-9]/', '', (string)$phone);
 }
 
 $orders = loadJson('orders.json');
+$cleanedOrders = removeOldCancelledOrders($orders);
+if (count($cleanedOrders) !== count($orders)) {
+    $orders = $cleanedOrders;
+    saveJson('orders.json', $orders);
+}
 $menu = loadJson('menu.json');
 $menuImages = [];
 foreach ($menu as $menuItem) {

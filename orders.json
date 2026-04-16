@@ -38,45 +38,5 @@
         "payment_method": "cash",
         "status": "Preparing",
         "timestamp": 1775432069
-    },
-    {
-        "id": "order_69dea359645037.92196795",
-        "date": "2026-04-14",
-        "items": [
-            {
-                "name": "pizza",
-                "price": 410,
-                "quantity": 2,
-                "subtotal": 820
-            }
-        ],
-        "total": 820,
-        "table_number": "Table 10",
-        "customer_name": "abresh",
-        "phone": "0930383286",
-        "notes": "",
-        "payment_method": "cash",
-        "status": "Cancelled",
-        "timestamp": 1776198489
-    },
-    {
-        "id": "order_69decacd760389.49018542",
-        "date": "2026-04-15",
-        "items": [
-            {
-                "name": "pizza",
-                "price": 410,
-                "quantity": 1,
-                "subtotal": 410
-            }
-        ],
-        "total": 410,
-        "table_number": "Table 11",
-        "customer_name": "abresh",
-        "phone": "0930383286",
-        "notes": "",
-        "payment_method": "cash",
-        "status": "Cancelled",
-        "timestamp": 1776208589
     }
 ]
