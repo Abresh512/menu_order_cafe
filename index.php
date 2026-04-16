@@ -42,11 +42,11 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
 <body>
     <header class="site-header fade-in">
         <div class="site-header-top">
-            <div class="site-branding">
+            <div class="site-header-left">
                 <div class="brand-logo">
                     <img src="images/friends-logo.jpg" alt="Friends Cafe Logo">
                 </div>
-                <div>
+                <div class="header-text">
                     <h1>Friends</h1>
                     <p>Fast, friendly, and fresh café ordering for every table.</p>
                 </div>
@@ -56,6 +56,15 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
                 <a href="orders.php" class="button button-secondary">My Orders</a>
                 <a href="<?php echo esc($adminLink); ?>" class="button button-secondary"><?php echo esc($adminLabel); ?></a>
             </div>
+            <button type="button" class="hamburger-btn" aria-label="Open menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        <div class="mobile-menu" aria-hidden="true">
+            <a href="orders.php" class="mobile-menu-link">My Orders</a>
+            <a href="<?php echo esc($adminLink); ?>" class="mobile-menu-link"><?php echo esc($adminLabel); ?></a>
         </div>
     </header>
 
@@ -408,6 +417,17 @@ $adminLabel = !empty($_SESSION['admin_user']) ? 'Dashboard' : 'Login';
             hideMessage();
             clearMessageFromURL();
         }, 5000);
+
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        if (hamburgerBtn && mobileMenu) {
+            hamburgerBtn.addEventListener('click', () => {
+                const isOpen = mobileMenu.classList.toggle('open');
+                hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+                mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+            });
+        }
     </script>
     <script src="app.js"></script>
 </body>

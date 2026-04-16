@@ -56,7 +56,7 @@
         "phone": "0930383286",
         "notes": "",
         "payment_method": "cash",
-        "status": "Pending",
+        "status": "Cancelled",
         "timestamp": 1776198489
     },
     {
@@ -76,7 +76,7 @@
         "phone": "0930383286",
         "notes": "",
         "payment_method": "cash",
-        "status": "Pending",
+        "status": "Cancelled",
         "timestamp": 1776208589
     }
 ]

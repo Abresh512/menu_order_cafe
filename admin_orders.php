@@ -238,6 +238,7 @@ function isNewOrder($timestamp) {
         .order-status.status-preparing { background: rgba(245, 158, 11, 0.15); color: #92400e; }
         .order-status.status-ready { background: rgba(16, 185, 129, 0.12); color: #047857; }
         .order-status.status-completed { background: rgba(107, 114, 128, 0.12); color: #334155; }
+        .order-status.status-cancelled { background: rgba(220, 38, 38, 0.16); color: #991b1b; }
         
         .filters-bar {
             background: var(--surface);
@@ -284,6 +285,18 @@ function isNewOrder($timestamp) {
             border-radius: 24px;
             padding: 16px;
             transition: var(--transition);
+        }
+        
+        .order-card.cancelled-order {
+            filter: blur(0.4px) brightness(0.95);
+            border-color: rgba(220, 38, 38, 0.45);
+            background: rgba(254, 226, 226, 0.5);
+        }
+        
+        .order-card.cancelled-order .order-controls,
+        .order-card.cancelled-order .status-update select,
+        .order-card.cancelled-order .status-update button {
+            opacity: 0.6;
         }
         
         .order-card:hover {
@@ -571,6 +584,68 @@ function isNewOrder($timestamp) {
                 align-items: stretch;
             }
         }
+
+        @media (max-width: 640px) {
+            .admin-header-content {
+                gap: 12px;
+            }
+
+            .admin-actions {
+                width: 100%;
+                gap: 10px;
+            }
+
+            .admin-actions a {
+                width: 100%;
+                padding: 10px 14px;
+            }
+
+            .filters-bar {
+                gap: 10px;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .order-card {
+                padding: 14px;
+            }
+
+            .order-card-top {
+                gap: 12px;
+            }
+
+            .order-summary {
+                gap: 14px;
+            }
+
+            .item-thumb {
+                width: 72px;
+                height: 72px;
+            }
+
+            .item-details {
+                gap: 8px;
+            }
+
+            .order-total-line,
+            .order-controls {
+                gap: 10px;
+            }
+
+            .status-update select,
+            .status-update button,
+            .button-secondary {
+                width: 100%;
+            }
+
+            .order-total-line {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -631,6 +706,7 @@ function isNewOrder($timestamp) {
                     <option value="Preparing" <?php echo $filterStatus === 'Preparing' ? 'selected' : ''; ?>>Preparing</option>
                     <option value="Ready" <?php echo $filterStatus === 'Ready' ? 'selected' : ''; ?>>Ready</option>
                     <option value="Completed" <?php echo $filterStatus === 'Completed' ? 'selected' : ''; ?>>Completed</option>
+                    <option value="Cancelled" <?php echo $filterStatus === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
                 </select>
             </div>
             <button type="button" class="button-secondary" onclick="applyFilters()">Apply Filters</button>
@@ -646,7 +722,8 @@ function isNewOrder($timestamp) {
                 </div>
             <?php else: ?>
                 <?php foreach ($displayOrders as $order): ?>
-                    <div class="order-card">
+                    <?php $isCancelled = strtolower(trim($order['status'] ?? '')) === 'cancelled'; ?>
+                    <div class="order-card<?php echo $isCancelled ? ' cancelled-order' : ''; ?>">
                         <div class="order-card-top">
                             <div>
                                 <h3><?php echo esc($order['table_number'] ?: 'Order #' . $order['id']); ?></h3>
@@ -691,17 +768,21 @@ function isNewOrder($timestamp) {
                             <form class="status-update" method="post">
                                 <input type="hidden" name="order_id" value="<?php echo esc($order['id']); ?>">
                                 <input type="hidden" name="action" value="update">
-                                <select name="status">
-                                    <?php foreach (['Pending', 'Preparing', 'Ready', 'Completed'] as $status): ?>
+                                <select name="status" <?php echo $isCancelled ? 'disabled' : ''; ?>>
+                                    <?php foreach (['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'] as $status): ?>
                                         <option value="<?php echo esc($status); ?>" <?php echo $order['status'] === $status ? 'selected' : ''; ?>>
                                             <?php echo esc($status); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <button type="submit" class="button">Update</button>
+                                <button type="submit" class="button" <?php echo $isCancelled ? 'disabled' : ''; ?>>Update</button>
                             </form>
                             
-                            <button type="button" class="button-secondary" onclick="showDeleteOrderModal('<?php echo esc($order['id']); ?>')">Remove</button>
+                            <?php if ($isCancelled): ?>
+                                <button type="button" class="button-secondary" disabled>Remove</button>
+                            <?php else: ?>
+                                <button type="button" class="button-secondary" onclick="showDeleteOrderModal('<?php echo esc($order['id']); ?>')">Remove</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -873,6 +954,35 @@ function isNewOrder($timestamp) {
                 closeDeleteAllModal();
             }
         });
+
+        // Auto-refresh when orders.json changes, useful for kitchen displays and manager screens.
+        const autoRefreshOrders = async () => {
+            try {
+                const response = await fetch('orders.json', { cache: 'no-store' });
+                if (!response.ok) return;
+                const payload = await response.text();
+
+                if (window.ordersJsonSnapshot === undefined) {
+                    window.ordersJsonSnapshot = payload;
+                    return;
+                }
+
+                if (window.ordersJsonSnapshot !== payload) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.warn('Auto-refresh check failed:', error);
+            }
+        };
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                autoRefreshOrders();
+            }
+        });
+
+        autoRefreshOrders();
+        setInterval(autoRefreshOrders, 5000);
     </script>
 </body>
 </html>
